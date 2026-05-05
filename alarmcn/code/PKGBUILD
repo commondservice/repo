@@ -1,13 +1,14 @@
 # Maintainer: Filipe Laíns (FFY00) <lains@archlinux.org>
-# Maintainer Bert Peters <bertptrs@archlinux.org>
+# Maintainer: Bert Peters <bertptrs@archlinux.org>
+# Maintainer: Quentin Michaud <mh4ckt3mh4ckt1c4s@archlinux.org>
 # Contributor: Michael Hansen <zrax0111 gmail com>
 # Contributor: Francisco Magalhães <franmagneto gmail com>
 
 pkgname=code
 pkgdesc='The Open Source build of Visual Studio Code (vscode) editor'
 # Important: Remember to check https://github.com/microsoft/vscode/wiki/How-to-Contribute#prerequisites for target node version
-_electron=electron37
-pkgver=1.106.3
+_electron=electron39
+pkgver=1.118.1
 pkgrel=1
 arch=(aarch64 x86_64)
 url='https://github.com/microsoft/vscode'
@@ -16,7 +17,7 @@ depends=($_electron 'libsecret' 'libx11' 'libxkbfile' 'ripgrep')
 optdepends=('bash-completion: Bash completions'
             'zsh-completions: ZSH completitons'
             'x11-ssh-askpass: SSH authentication')
-makedepends=('git' 'nodejs-lts-jod' 'npm' 'python' 'desktop-file-utils' 'zip' 'jq')
+makedepends=(tar 'git' 'nodejs-lts-jod' 'npm' 'python' 'desktop-file-utils' 'zip' 'jq')
 provides=('vscode')
 options=('!strip' '!debug')
 source=(vscode::"git+https://github.com/microsoft/vscode.git#tag=$pkgver"
@@ -26,16 +27,16 @@ source=(vscode::"git+https://github.com/microsoft/vscode.git#tag=$pkgver"
         'clipath.patch'
         # Originally taken from https://github.com/termux/termux-packages/raw/0974620c52e72d0c80bcc8a42bad482555f629e8/x11-packages/code-oss/0009-openvsx-extension-signature.patch
         '0009-openvsx-extension-signature.patch')
-sha512sums=('11d1e82406a1e9d5f8250c55f256633f40409a53b0a10689ab4043c5566ad5adaf9ca124043f8a200d6549d68aa0d3670c213e18a54e46cc8d1aae64ee55dd07'
+sha512sums=('401376a8eb18188d22eb94692e0dac84ca17115771f127739535635be6b24a279cbcd34b04c749af5fb69ea5abbd53ffa4a3754dd96b20b59bb07a8b8044f738'
             '793f9ff6306e3992ac89802d98110cba288ea1181a901467333293b7d76182ef9792c2a39ff49d9347a18a174b1f42bc58862091dff583f4146c2704eea28033'
             '937299c6cb6be2f8d25f7dbc95cf77423875c5f8353b8bd6cd7cc8e5603cbf8405b14dbf8bd615db2e3b36ed680fc8e1909410815f7f8587b7267a699e00ab37'
             'b1aa0d7c5b3e3e8ba1172822d75ea38e90efc431b270e0b4ca9e45bf9c0be0f60922c8618969ef071b5b6dbd9ac9f030294f1bf49bcc28c187b46d113dca63a7'
             'e570b30cd470190aa56596913478d5fb8ba265a0f8c9d1408ea2118612cc69a360cc55e4523c3dc9c65f73e3dea53fc6620c97f6592fb9f86c3aca51ad3d9744'
-            '08054ecc96a9eaf49260dab31b921f94f6687ad73f7d5955f90db3ead370bf177d62dfc82c62484ae832c7282229ff5be71685f787dc25383da5b223be10cf9e')
+            'f3d6a93ad0630ece0285dad30aacc3a4ec24ab4b3886c60268d6568ff20f1eeeb758217e82d47b03880da73372723047824786aa1daf37c94e8d25610e664cd2')
 
 # Even though we don't officially support other archs, let's
 # allow the user to use this PKGBUILD to compile the package
-# for his architecture
+# for their architecture
 case "$CARCH" in
   i686)
     _vscode_arch=ia32
@@ -80,6 +81,10 @@ prepare() {
       -i ../code.sh
   sed "1s|.*|#!/usr/lib/$_electron/electron|" -i ../code.mjs
 
+  # see https://gitlab.archlinux.org/archlinux/packaging/packages/code/-/issues/42
+  sed -r "s/\bsourcemap:\s*[\"'](inline|linked)[\"']/sourcemap: 'external'/" -i \
+    build/next/index.ts
+
   # This patch no longer contains proprietary modifications.
   # See https://github.com/Microsoft/vscode/issues/31168 for details.
   patch -p0 -i ../product_json.diff
@@ -123,7 +128,11 @@ prepare() {
   patch -p1 -i "$srcdir/clipath.patch"
 
   # disable electron checksum verification as we are not bundling electron
-  sed -i 's|validateChecksum: false,|validateChecksum: true,|' build/lib/electron.{js,ts}
+  sed -i 's|validateChecksum: false,|validateChecksum: true,|' build/lib/electron.ts
+
+  # upstream has a compatibility issue with npm but it doesn't affect packaging
+  # so remove the check
+  sed -i '/Please use npm version < 11.2.0./{n;d}' build/npm/preinstall.ts
 }
 
 build() {
@@ -140,6 +149,8 @@ package() {
   # Install resource files
   install -dm 755 "$pkgdir"/usr/lib/$pkgname
   cp -r --no-preserve=ownership --preserve=mode VSCode-linux-$_vscode_arch/resources/app/* "$pkgdir"/usr/lib/$pkgname/
+  # clean up sourcemaps
+  echo "Removed $(find "$pkgdir"/usr/lib/$pkgname -name '*.map' -print -delete | wc -l) sourcemaps"
   chmod -R u=rwX,go=rX "$pkgdir"
   # Replace statically included binary with system copy
   ln -sf /usr/bin/rg "$pkgdir"/usr/lib/code/node_modules/@vscode/ripgrep/bin/rg

@@ -3,10 +3,10 @@
 pkgname=notes-git
 _pkgname=${pkgname%-git}
 pkgver=2.3.1.r56.gf1dd087
-pkgrel=1
+pkgrel=3
 pkgdesc="Note taking application, write down your thoughts"
 arch=('x86_64')
-url="https://github.com/nuttyartist/${_pkgname}"
+url="https://www.notes-foss.com"
 license=('MPL-2.0')
 makedepends=('cmake' 'git')
 depends=('hicolor-icon-theme' 'qt6-base' 'qt6-declarative' 'qt6-quick3d')
@@ -14,10 +14,8 @@ provides=("${_pkgname}")
 conflicts=("${_pkgname}")
 source=("git+https://github.com/nuttyartist/${_pkgname}"
 	'git+https://github.com/b00f/qautostart.git'
-	'git+https://github.com/pbek/qmarkdowntextedit.git'
-	'git+https://github.com/alex-spataru/QSimpleUpdater.git')
+	'git+https://github.com/pbek/qmarkdowntextedit.git')
 sha256sums=('SKIP'
-            'SKIP'
             'SKIP'
             'SKIP')
 
@@ -28,27 +26,25 @@ pkgver() {
 
 prepare() {
 	cd "${_pkgname}/"
+	git rm 3rdParty/QSimpleUpdater
+
 	git submodule init
 	git submodule set-url 3rdParty/qautostart "${srcdir}/qautostart/"
 	git submodule set-url 3rdParty/qmarkdowntextedit "${srcdir}/qmarkdowntextedit/"
-	git submodule set-url 3rdParty/QSimpleUpdater "${srcdir}/QSimpleUpdater/"
 	git -c protocol.file.allow=always submodule update
 }
 
 build() {
-	cd "${_pkgname}/"
 	cmake -B build \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DUPDATE_CHECKER=OFF \
-		-DGIT_REVISION=ON
+		-S "${_pkgname}/" \
+		-D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_INSTALL_PREFIX=/usr \
+		-D UPDATE_CHECKER=OFF \
+		-D GIT_REVISION=ON
 
 	cmake --build build
 }
 
 package() {
-	cd "${_pkgname}/"
 	DESTDIR="${pkgdir}" cmake --install build
-	install -d "${pkgdir}/usr/share/doc/${_pkgname}/"
-	cp docs/* "${pkgdir}/usr/share/doc/${_pkgname}/"
 }

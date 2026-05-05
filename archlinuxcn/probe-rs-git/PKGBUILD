@@ -2,7 +2,7 @@
 # Contributor: Dominic Meiser [git at msrd0 dot de]
 
 pkgname="probe-rs-git"
-pkgver=0.30.0.r45.g5a13498
+pkgver=0.31.0.r123.g9126d4f
 pkgrel=1
 pkgdesc='A collection of on chip debugging tools to communicate with microchips.'
 url='https://probe.rs'
@@ -28,7 +28,6 @@ conflicts=(
     'cargo-embed'
     'cargo-flash'
     'probe-rs'
-    'rtthost'
 )
 source=(
     "$pkgname::git+https://github.com/probe-rs/probe-rs.git"
@@ -50,7 +49,7 @@ prepare() {
     cd "$pkgname"
 
     # https://github.com/probe-rs/probe-rs/pull/3583
-    git cherry-pick -n 6834bceb53c3f6405b3a3e49984ef24b6495b8bd^..15b5880752c4159fa92d8af4d837df7df6461745
+    git cherry-pick -n 75545a41e9a8859bfd72e8d6493e096f6d8448fd^..6688ca4b6c114e1559bc3e743868a5402c7812c2
 
     export RUSTUP_TOOLCHAIN=stable
     cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
@@ -103,11 +102,10 @@ package() {
         -not -perm /u+x,g+x,o+x \
         -delete
     # Remove all executable files not for end users.
-    rm target/release/{target-gen,xtask,smoke_tester}
+    rm target/release/{target-gen,xtask,libsmoke_tester_macros.so}
     _pick probe-rs
     _pick cargo-flash
     _pick cargo-embed
-    _pick rtthost
     # Ensure no files to install.
     rmdir target/release
 

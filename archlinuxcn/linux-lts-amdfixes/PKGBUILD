@@ -1,7 +1,7 @@
 # Maintainer: Andreas Radke <andyrtr@archlinux.org>
 
 pkgbase=linux-lts
-pkgver=6.12.63
+pkgver=6.12.75
 pkgrel=1
 pkgdesc='LTS Linux'
 url='https://www.kernel.org'
@@ -42,18 +42,18 @@ validpgpkeys=(
   647F28654894E3BD457199BE38DBBDC86092693E  # Greg Kroah-Hartman
 )
 # https://www.kernel.org/pub/linux/kernel/v6.x/sha256sums.asc
-sha256sums=('9502c5ffe4b894383c97abfccf74430a84732f04ee476b9c0d87635b29df7db3'
+sha256sums=('06ee7927556ff1aa8810c4826501b0fdb169ebdc180644b882cf7c143ac1c177'
             'SKIP'
             '3cf389ced2b40e6457421cb27892bf126b73032fbf1de895ecc37b13d981a17c'
             '423b2c6fbc8d6df79997550bef1b1e4f6f402b668007d150013623a83a12b49e'
             '596f8e0aef1df72a84685e8f2b8a9dde7e33b513de555fae6069ba652cbd00c1'
-            '44d323f1328ac68a5ec442dfe00da0906aa9706558f28f0dc7f4e994f3b63c39')
-b2sums=('8f24d8efe88f1b5e6fde5fba6833798e5b3d5aa8bbdb7e031ac0f8333f7ffb5fa19a9b0d028641729971cb63e147c6cd6d79b5cd97fb9851471d3efe832119e5'
+            'd117688f056c8e01d2a0fc853b77e9640036e4c2ccbedea4e14004e4e0f16f85')
+b2sums=('f016e7e1756ebdb0828df88b55a1f1c2236e85dd6133fa84e547a8c3caf7172eaf077a9f7b035f8a7a4b7fd21fe22a214416d963462951c02f63cd6b6f933f27'
         'SKIP'
         'b2e1f3544470a0ded336a8d9097b879060530d795a9b60ef5d617d16c165f3ca27424529a7c464d249ab72abcaf48d65d66d96508a7b49622ab404739ae0a918'
         '01f1a8249983b1a52437843ce3566242b3ed1df03fcab98ec092982be9a4dc947ab0f932a6bc9ac84f85248dca479ebe193a6032cfd2b574dc6f5ca31a0190c5'
         '410dc8911051905c5c01b47890eeff817fc180434372864cfa9ee0d77e0ff43571b9fcc3c193d562c4dcd49511edf7c6c01dde12dd0778845d1868dc435531ea'
-        '20b36930549667ca8165350404cf4b9e869ea5f1436613052cd2faedca7c22d996de349b3d365db6d0db07a55abadfcccb7a784c0ebccfb6a3e3e53033f0045d')
+        'ac5c72567b9e4d5e1bcdcaeb699e82d5f01408b2bfd9feea7ee72a0b6dc939e141a02bbc1f53d8cfdbf336a0f877ee42762ae2cdeeb8c4c849d377fad58c72a2')
 export KBUILD_BUILD_HOST=archlinux
 pkgbase=linux-lts-amdfixes
 export KBUILD_BUILD_USER=$pkgbase
@@ -247,6 +247,7 @@ _package-headers() {
     Zlib
   )
   depends=(pahole)
+  provides=(LINUX-HEADERS)
 
   cd $_srcname
   local builddir="$pkgdir/usr/lib/modules/$(<version)/build"

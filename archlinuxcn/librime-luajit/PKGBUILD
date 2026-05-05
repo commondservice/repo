@@ -4,14 +4,14 @@
 # Contributor: 網軍總司令
 
 pkgname=librime-luajit
-pkgver=1.15.0
-pkgrel=2
+pkgver=1.16.1
+pkgrel=6
 epoch=1
 pkgdesc="Rime input method engine"
 arch=('x86_64')
 url="https://github.com/rime/librime"
 license=('BSD-3-Clause')
-depends=('boost-libs' 'capnproto' 'gcc-libs' 'glibc' 'opencc' 'yaml-cpp' 'leveldb' 'librime-data' 'luajit' 'google-glog' 'marisa')
+depends=('boost-libs' 'capnproto' 'glibc' 'opencc' 'yaml-cpp' 'leveldb' 'librime-data' 'luajit' 'google-glog' 'marisa' 'libstdc++' 'libgcc')
 makedepends=('git' 'cmake' 'boost' 'gtest' 'ninja')
 source=("git+https://github.com/rime/librime.git#tag=$pkgver"
         "git+https://github.com/lotem/librime-octagram.git"
@@ -19,7 +19,7 @@ source=("git+https://github.com/rime/librime.git#tag=$pkgver"
         "git+https://github.com/rime/librime-charcode.git"
         "git+https://github.com/lotem/librime-proto.git"
         "git+https://github.com/rime/librime-predict.git")
-sha512sums=('ec6d5c35b3980af39a1163039ac5f84816f9f2aa119c5d718142aa1d5fc0a1e1a91d890b2d1b56e6096e226080a5984220a5dce44edb932fb59c0a00b67d5953'
+sha512sums=('8670c6377e6df8549488951e2db1d6a0a9fd665318dbe47584689d93a872be4c85260f66b0f36f32b4ac854ff963a740f9645d0df6b417e2585d6fb10ba06a87'
             'SKIP'
             'SKIP'
             'SKIP'

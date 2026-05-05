@@ -1,22 +1,23 @@
-# Maintainer: DeepChirp <DeepChirp@outlook.com>
+# Maintainer: DeepChirp <deepchirp@archlinuxcn.org>
+# Contributor: Jisu-Woniu <jswn@jswn9945.xyz>
 
 _repo=PeerBanHelper
 pkgname=peerbanhelper
-pkgver=9.2.3
+pkgver=9.3.12
 pkgrel=1
 pkgdesc="A tool to auto ban peers on the Bittorrent network."
 arch=('any')
 url="https://github.com/PBH-BTN/PeerBanHelper"
 license=('GPL-3.0-only')
-depends=('java-runtime>=21' 'sh')
-makedepends=('git' 'java-environment>=21' 'nodejs' 'pnpm')
+depends=('java-runtime>=25' 'sh')
+makedepends=('git' 'java-environment>=25' 'nodejs' 'pnpm')
 source=("${_repo}::git+https://github.com/PBH-BTN/PeerBanHelper.git#tag=v${pkgver}" # If we use the tarball, the git commit information is missing, and a warning will appear in the version information of the WebUI.
         "peerbanhelper.sh"
         "${pkgname}.sysusers"
         "${pkgname}.tmpfiles"
         "${pkgname}.service")
-sha256sums=('78604c7159207298a3b787c80d7568ab27cdcb43de5d072f00eba42e00594e95'
-            '990597699fc80ea8a3cdc4b57a74c0d2295a4763a9a00cf43d7ed18ebdd3f9aa'
+sha256sums=('83205a448509de49ba96350c8331e2c98cb67bd27236b96a459709b1d482bd25'
+            '65cc7bb87d8a22512e613463b7ab7ab80c23c624fed257679fd153f44bcaee86'
             '394ee8f74dd630f375c34cf5160059078516033b0867ad43b1c43377b4104bde'
             '3fb27c63d4d00ca6ac182784fa22bf60bfd856b42601ba1d404e78070c59e437'
             '4a84cc592ef1b5e22077ed2b2324f8aff4adfa6d037c982b4bd27d0818db8391')

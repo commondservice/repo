@@ -3,7 +3,7 @@
 # Contributor: Maciek Marciniak <mm2pl at kotmisia.pl>
 
 pkgname=obs-studio
-pkgver=32.0.2
+pkgver=32.1.1
 pkgrel=2
 pkgdesc="Free, open source software for live streaming and recording"
 arch=(aarch64 x86_64)
@@ -11,25 +11,20 @@ url="https://obsproject.com"
 license=('GPL-2.0-only')
 depends=('ffmpeg' 'jansson' 'libxinerama' 'libxkbcommon-x11' 'mbedtls' 'rnnoise' 'pciutils'
          'qt6-svg' 'curl' 'jack' 'gtk-update-icon-cache' 'pipewire' 'libxcomposite'
-         'libdatachannel' 'uthash' 'simde' 'qrcodegencpp-cmake')
-makedepends=('cmake' 'libfdk-aac' 'x264' 'swig' 'python' 'luajit' 'sndio' 'nlohmann-json'
+         'libdatachannel' 'uthash' 'simde' 'qrcodegencpp-cmake' 'python')
+makedepends=('cmake' 'libfdk-aac' 'x264' 'swig' 'luajit' 'sndio' 'nlohmann-json'
              'ffnvcodec-headers' 'websocketpp' 'asio' 'extra-cmake-modules')
 optdepends=('libfdk-aac: FDK AAC codec support'
-            'libva-intel-driver: hardware encoding'
+            'libva-intel-driver: hardware encoding for older Intel GPUs'
+            'intel-media-driver: hardware encoding for recent Intel GPUs'
             'libva-mesa-driver: hardware encoding'
             'luajit: scripting support'
-            'python: scripting support'
             'sndio: Sndio input client'
-            'v4l2loopback-dkms: virtual camera support')
-source=($pkgname-$pkgver.tar.gz::https://github.com/obsproject/obs-studio/releases/download/$pkgver/OBS-Studio-$pkgver-Sources.tar.gz
-        obs-studio-12328.patch::https://github.com/obsproject/obs-studio/pull/12328.patch)
-sha256sums=('48d744037c553eea8f9b76bf46f6dcac753e52871f49b2c1a2580757f723a1b7'
-            '25322c692cf5cc88fc7d17cbb40a61b7e32d5ea675da647dd1a1996474ec2c8e')
-
-prepare() {
-  cd $pkgname-$pkgver-sources
-  patch -Np1 -i "$srcdir"/obs-studio-12328.patch
-}
+            'v4l2loopback-dkms: virtual camera support'
+            'xdg-desktop-portal-impl: Wayland window/screen capture'
+            )
+source=($pkgname-$pkgver.tar.gz::https://github.com/obsproject/obs-studio/releases/download/$pkgver/OBS-Studio-$pkgver-Sources.tar.gz)
+sha256sums=('f4c17e1aa2a00efd8729ed6cfef9308bc6a2b6c583c187d7959eaa72eb2e3676')
 
 build() {
   export CXXFLAGS+=" -Wno-error=deprecated-declarations"

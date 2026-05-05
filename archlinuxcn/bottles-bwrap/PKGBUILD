@@ -4,7 +4,7 @@
 
 pkgname=bottles-bwrap
 _pkgname=Bottles
-pkgver=60.1
+pkgver=63.2
 pkgrel=1
 epoch=2
 pkgdesc='Easily manage wine and proton prefix. Sandboxed by portable.'
@@ -36,7 +36,8 @@ depends=(
 	python-requests
 	python-steamgriddb
 	python-yaml
-	webkit2gtk
+	python-yara
+	webkit2gtk-4.1
 	xorg-xdpyinfo
 	vkbasalt-cli
 	portable
@@ -58,17 +59,18 @@ makedepends=(
 	meson
 	ninja
 	git
+	portable-packer
 )
 source=(
 	"Bottles::git+https://github.com/bottlesdevs/Bottles.git#tag=${pkgver}"
 	remove-flatpak-checks.patch
-	portable-config
-	start.sh
+	config.toml
+	desktop.file
 )
-sha256sums=('3b6203ff66b79ac4dab1f70ff6b05146629ac839b5a972b0e3fd8b1a56966068'
-            '3efff1f50b7878115b9b46b4998fbb36cd749a0515c6984b12efd7f12044b8b2'
-            '15b16b8fdc61e5da2e62c80643351c1cbe981e5df4474564446e159ef7249766'
-            'e8151fe783b4c202c99e206535f6f2b3e025b070d7237cb6f8bbb1f23ad0eb94')
+sha256sums=('b051308770214a4fefc6c596b902419daa07b38c2def24ca2f8791091603122c'
+            '2770f36f98e0a48464a13047a934c92b7eff5a9490a30868b86b90210e97b824'
+            'b5e9e7d9b3fe4e47babeed9c96d3bed5bfef4a399f1fe5e6e8395a7d4c30a6f1'
+            'ea8e990c57bddaa3079f80d7074a6b7939a96cd0cc37de3003a848408e45313a')
 
 function prepare() {
 	patch --forward --directory="${srcdir}/${_pkgname}" --strip=1 --input="${srcdir}/remove-flatpak-checks.patch"
@@ -81,13 +83,18 @@ build() {
 }
 
 package() {
-	install -vDm755 "${srcdir}/portable-config" \
-		"${pkgdir}/usr/lib/portable/info/com.usebottles.bottles/config"
-	install -vDm755 "${srcdir}/start.sh" \
-		"${pkgdir}/usr/bin/bottles-bwrap"
 	cd "${srcdir}/${_pkgname}"
 	DESTDIR="${pkgdir}" ninja -C build install
-	install -d "${pkgdir}/usr/lib/bottles-bwrap"
-	mv ${pkgdir}/usr/bin/bottles{,-cli} "${pkgdir}/usr/lib/bottles-bwrap"
+	install -d "${pkgdir}/usr/lib"
+	mv ${pkgdir}/usr/bin/ "${pkgdir}/usr/lib/bottles-bwrap"
+	declare -x -g pkgname
+	declare -x -g pkgdir
+	declare -x -g srcdir
+	portable-packer \
+		--distro arch \
+		--mode post \
+		--config-ng "${srcdir}/config.toml" \
+		--desktop-file "${srcdir}/desktop.file" \
+		--dbus-activation
 	ln -srf "${pkgdir}/usr/bin/bottles-bwrap" "${pkgdir}/usr/bin/bottles"
 }

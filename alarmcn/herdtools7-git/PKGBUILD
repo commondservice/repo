@@ -4,14 +4,14 @@ _pkgbase='herdtools7'
 pkgname=('herdtools7-git')
 provides=('herdtools7')
 conflicts=('herdtools7')
-pkgver=7.58+1.r1193.g079fccd30
+pkgver=7.58+1.r1593.g7d04cec22
 pkgrel=1
 pkgdesc="The Herd toolsuite to deal with .cat memory models"
 arch=(armv7h aarch64 i686 x86_64)
 url='https://github.com/herd/herdtools7'
 license=('CeCILL-B')
 depends=(ocaml)
-makedepends=(git python ocamlbuild ocaml-menhir dune ocaml-zarith)
+makedepends=(git python ocamlbuild ocaml-menhir dune ocaml-zarith ocaml-logs)
 source=('git+https://github.com/herd/herdtools7')
 sha256sums=('SKIP')
 

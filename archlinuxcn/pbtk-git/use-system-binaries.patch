@@ -1,17 +1,27 @@
-diff --git a/utils/common.py b/utils/common.py
-index 5dbe664..b975708 100644
---- a/utils/common.py
-+++ b/utils/common.py
-@@ -29,11 +29,10 @@ makedirs(str(BASE_PATH / 'endpoints'), exist_ok=True)
- # Constructing paths - executables
- 
+diff --git a/src/utils/common.py b/src/utils/common.py
+index 2944f5b..649d7d9 100644
+--- a/src/utils/common.py
++++ b/src/utils/common.py
+@@ -33,21 +33,13 @@ makedirs(str(BASE_PATH / 'endpoints'), exist_ok=True)
  external = Path(dirname(realpath(__file__))) / 'external'
--arch = '64' * (architecture()[0] == '64bit')
+ arch = '64' * (architecture()[0] == '64bit')
  
--protoc = str(external / 'protoc' / ('protoc' + {'win32': '.exe', 'darwin': '_osx'}.get(platform, arch)))
+-protoc = str(
+-    external
+-    / 'protoc'
+-    / ('protoc' + {'win32': '.exe', 'darwin': '_osx'}.get(platform, arch))
+-)
 +protoc = '/usr/bin/protoc'
- dex2jar = str(external / 'dex2jar' / ('d2j-dex2jar.' + {'win32': 'bat'}.get(platform, 'sh')))
--jad = str(external / 'jad' / ('jad' + {'win32': '.exe', 'darwin': '_osx'}.get(platform, '')))
+ dex2jar = str(
+     external
+     / 'dex2jar'
+     / ('d2j-dex2jar.' + {'win32': 'bat'}.get(platform, 'sh'))
+ )
+-jad = str(
+-    external
+-    / 'jad'
+-    / ('jad' + {'win32': '.exe', 'darwin': '_osx'}.get(platform, ''))
+-)
 +jad = '/usr/bin/jad'
  
  # Disable the C++ extension for Python-Protobuf (for consistent behaviour) [1]

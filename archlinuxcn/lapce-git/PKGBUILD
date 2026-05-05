@@ -3,15 +3,26 @@
 
 pkgname=lapce-git
 _pkgname=${pkgname%-git}
-pkgver=0.4.5.r12.ga886d68
+pkgver=0.4.6.r15.gc9e4c33
 pkgrel=1
 pkgdesc='Lightning-fast and Powerful Code Editor'
 arch=('x86_64' 'aarch64' 'riscv64')
 url="https://lapce.dev"
 _url="https://github.com/${_pkgname}/${_pkgname}"
 license=('Apache-2.0')
-depends=('expat' 'fontconfig' 'freetype2' 'gtk3' 'libxcb' 'libxkbcommon' 'libxkbcommon-x11')
-makedepends=('git' 'cargo' 'python' 'cmake' 'clang')
+depends=(
+	'expat'
+	'fontconfig'
+	'freetype2'
+	'glibc'
+	'gtk3'
+	'libgcc'
+	'libgit2'
+	'libxcb'
+	'libxkbcommon'
+	'openssl'
+)
+makedepends=('git' 'cargo' 'python' 'cmake')
 conflicts=("${_pkgname}")
 provides=("${_pkgname}")
 options=('!lto')
@@ -26,13 +37,15 @@ pkgver() {
 
 prepare() {
 	cd "${_pkgname}/"
-	cargo fetch --target "$CARCH-unknown-linux-gnu"
+	cargo fetch --locked --target host-tuple
 }
 
 build() {
 	cd "${_pkgname}/"
 	# See https://github.com/lapce/lapce/pull/2374 and https://bugs.archlinux.org/task/78922
 	export RELEASE_TAG_NAME="v${pkgver}"
+	export LIBGIT2_NO_VENDOR=1
+	export OPENSSL_NO_VENDOR=1
 	cargo build --frozen --profile release-lto --all-features
 }
 

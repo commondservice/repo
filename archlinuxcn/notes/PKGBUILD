@@ -5,46 +5,46 @@
 
 pkgname=notes
 pkgver=2.3.1
-pkgrel=3
+pkgrel=5
 pkgdesc="Note taking application, write down your thoughts"
 arch=('x86_64')
-url='https://www.get-notes.com'
+url="https://www.notes-foss.com"
 license=('MPL-2.0')
 depends=('hicolor-icon-theme' 'qt6-base' 'qt6-declarative' 'qt6-quick3d')
 makedepends=('git' 'cmake')
 source=("git+https://github.com/nuttyartist/notes.git#commit=v${pkgver}"
 	'git+https://github.com/b00f/qautostart.git'
 	'git+https://github.com/pbek/qmarkdowntextedit.git'
-	'git+https://github.com/alex-spataru/QSimpleUpdater.git')
+	'qt-6.10.patch')
 sha256sums=('a7b0b8af30bec001b2d9fd47af6bac3751b24afeea7a136e3eb0f1ab33da8274'
             'SKIP'
             'SKIP'
-            'SKIP')
+            'd898e0a8bde651cc1af53684d0eba1a45c1243b81cc39a81760ae07aa7f144ad')
 
 prepare() {
 	cd "${pkgname}/"
+	git rm 3rdParty/QSimpleUpdater
+
 	git submodule init
 	git submodule set-url 3rdParty/qautostart "${srcdir}/qautostart"
 	git submodule set-url 3rdParty/qmarkdowntextedit "${srcdir}/qmarkdowntextedit"
-	git submodule set-url 3rdParty/QSimpleUpdater "${srcdir}/QSimpleUpdater"
 	git -c protocol.file.allow=always submodule update
 
-	git cherry-pick -n 1585918af82e9ab03208be00a20816e5599f93f2 # Fix Qt 6.10 build
+	patch -Np1 -i ../qt-6.10.patch
 }
 
 build() {
-	cd "${pkgname}/"
 	cmake -B build \
-		-DCMAKE_BUILD_TYPE=Release \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DUSE_QT_VERSION=6 \
-		-DUPDATE_CHECKER=OFF \
-		-Wno-dev
+		-S "${pkgname}" \
+		-D CMAKE_BUILD_TYPE=Release \
+		-D CMAKE_INSTALL_PREFIX=/usr \
+		-D USE_QT_VERSION=6 \
+		-D UPDATE_CHECKER=OFF \
+		-W no-dev
 
 	cmake --build build
 }
 
 package() {
-	cd "${pkgname}/"
 	DESTDIR="${pkgdir}" cmake --install build
 }

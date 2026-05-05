@@ -1,24 +1,24 @@
-From 69126136cdc853eb74fad576bb4f7054d69757eb Mon Sep 17 00:00:00 2001
+From 89919ba93657997077d0d7a20ab91fd41341854c Mon Sep 17 00:00:00 2001
 From: Yichao Yu <yyc1992@gmail.com>
 Date: Sun, 26 Oct 2025 20:11:49 -0400
-Subject: [PATCH 10/11] Fix to use new ThreadSafeContext API
+Subject: [PATCH 10/10] Fix to use new ThreadSafeContext API
 
 Turn `add_output` into a manual co-routine
 so that we can get out of the caller scope mid-call
 to release the threadsafecontext lock early.
 ---
- src/aotcompile.cpp | 893 +++++++++++++++++++++++----------------------
+ src/aotcompile.cpp | 911 +++++++++++++++++++++++----------------------
  src/codegen.cpp    |   4 +-
  src/disasm.cpp     |  57 +--
- src/jitlayers.cpp  | 136 +++----
- src/jitlayers.h    |  51 ++-
- 5 files changed, 601 insertions(+), 540 deletions(-)
+ src/jitlayers.cpp  | 138 +++----
+ src/jitlayers.h    |  52 ++-
+ 5 files changed, 611 insertions(+), 551 deletions(-)
 
 diff --git a/src/aotcompile.cpp b/src/aotcompile.cpp
-index 6e86b7d245..af41c48ea5 100644
+index 4eb939e15d..098ecede54 100644
 --- a/src/aotcompile.cpp
 +++ b/src/aotcompile.cpp
-@@ -822,234 +822,235 @@ void *jl_emit_native_impl(jl_array_t *codeinfos, LLVMOrcThreadSafeModuleRef llvm
+@@ -823,237 +823,238 @@ void *jl_emit_native_impl(jl_array_t *codeinfos, LLVMOrcThreadSafeModuleRef llvm
          return std::make_pair(M.getDataLayout(), Triple(M.getTargetTriple()));
      });
      egal_set method_roots;
@@ -46,9 +46,12 @@ index 6e86b7d245..af41c48ea5 100644
 -                continue; // skip any duplicates that accidentally made there way in here (or make this an error?)
 -            if (jl_ir_inlining_cost((jl_value_t*)src) < UINT16_MAX)
 -                params.safepoint_on_entry = false; // ensure we don't block ExpandAtomicModifyPass from inlining this code if applicable
--            orc::ThreadSafeModule result_m = jl_create_ts_module(name_from_method_instance(jl_get_ci_mi(codeinst)),
--                    params.tsctx, clone.getModuleUnlocked()->getDataLayout(),
--                    Triple(clone.getModuleUnlocked()->getTargetTriple()));
+-            orc::ThreadSafeModule result_m =
+-                jl_create_ts_module(name_from_method_instance(jl_get_ci_mi(codeinst)),
+-                                    params.tsctx,
+-                                    clone.getModuleUnlocked()->getDataLayout(),
+-                                    Triple(clone.getModuleUnlocked()->getTargetTriple()),
+-                                    clone.getModuleUnlocked());
 -            jl_llvm_functions_t decls;
 -            if (!(params.params->force_emit_all) && jl_atomic_load_relaxed(&codeinst->invoke) == jl_fptr_const_return_addr)
 -                decls.functionObject = "jl_fptr_const_return";
@@ -82,9 +85,12 @@ index 6e86b7d245..af41c48ea5 100644
 +                    continue; // skip any duplicates that accidentally made there way in here (or make this an error?)
 +                if (jl_ir_inlining_cost((jl_value_t*)src) < UINT16_MAX)
 +                    params.safepoint_on_entry = false; // ensure we don't block ExpandAtomicModifyPass from inlining this code if applicable
-+                orc::ThreadSafeModule result_m = jl_create_ts_module(name_from_method_instance(jl_get_ci_mi(codeinst)),
-+                                                                     params.tsctx, clone.getModuleUnlocked()->getDataLayout(),
-+                                                                     Triple(clone.getModuleUnlocked()->getTargetTriple()));
++                orc::ThreadSafeModule result_m =
++                    jl_create_ts_module(name_from_method_instance(jl_get_ci_mi(codeinst)),
++                                        params.tsctx,
++                                        clone.getModuleUnlocked()->getDataLayout(),
++                                        Triple(clone.getModuleUnlocked()->getTargetTriple()),
++                                        clone.getModuleUnlocked());
 +                jl_llvm_functions_t decls;
 +                if (!(params.params->force_emit_all) && jl_atomic_load_relaxed(&codeinst->invoke) == jl_fptr_const_return_addr)
 +                    decls.functionObject = "jl_fptr_const_return";
@@ -463,7 +469,7 @@ index 6e86b7d245..af41c48ea5 100644
  }
  
  static object::Archive::Kind getDefaultForHost(Triple &triple)
-@@ -1883,63 +1884,142 @@ static inline void schedule_uv_thread(uv_thread_t *worker, CB &&cb)
+@@ -1891,63 +1892,148 @@ static inline void schedule_uv_thread(uv_thread_t *worker, CB &&cb)
  
  // Entrypoint to optionally-multithreaded image compilation. This handles global coordination of the threading,
  // as well as partitioning, serialization, and deserialization.
@@ -610,6 +616,9 @@ index 6e86b7d245..af41c48ea5 100644
 +            std::vector<uv_thread_t> workers(threads);
 +            for (unsigned i = 0; i < threads; i++) {
 +                schedule_uv_thread(&workers[i], [&, i]() {
++                    // Initialize time trace profiler for this thread if enabled
++                    if (jl_is_timing_trace)
++                        timeTraceProfilerInitialize(jl_timing_trace_granularity, ("shard_" + std::to_string(i)).c_str());
 +                    LLVMContext ctx;
 +                    ctx.setDiscardValueNames(true);
 +                    // Lazily deserialize the entire module
@@ -640,6 +649,9 @@ index 6e86b7d245..af41c48ea5 100644
 +                    timers[i].construct.stopTimer();
 +
 +                    outputs[i] = add_output_impl(*M, TM, timers[i], unopt_out, opt_out, obj_out, asm_out);
++                    // Merge this thread's time trace into the main thread
++                    if (jl_is_timing_trace)
++                        timeTraceProfilerFinishThread();
 +                });
              }
 -            outputs[0] = add_output_impl(M, TM, timers[0], unopt_out, opt_out, obj_out, asm_out);
@@ -655,7 +667,7 @@ index 6e86b7d245..af41c48ea5 100644
  
          if (!report_timings) {
              timer_group.clear();
-@@ -1948,97 +2028,37 @@ static SmallVector<AOTOutputs, 16> add_output(Module &M, TargetMachine &TM, Stri
+@@ -1956,103 +2042,37 @@ static SmallVector<AOTOutputs, 16> add_output(Module &M, TargetMachine &TM, Stri
              for (auto &t : timers) {
                  t.print(dbgs(), true);
              }
@@ -700,6 +712,9 @@ index 6e86b7d245..af41c48ea5 100644
 -        std::vector<uv_thread_t> workers(threads);
 -        for (unsigned i = 0; i < threads; i++) {
 -            schedule_uv_thread(&workers[i], [&, i]() {
+-                // Initialize time trace profiler for this thread if enabled
+-                if (jl_is_timing_trace)
+-                    timeTraceProfilerInitialize(jl_timing_trace_granularity, ("shard_" + std::to_string(i)).c_str());
 -                LLVMContext ctx;
 -                ctx.setDiscardValueNames(true);
 -                // Lazily deserialize the entire module
@@ -730,6 +745,9 @@ index 6e86b7d245..af41c48ea5 100644
 -                timers[i].construct.stopTimer();
 -
 -                outputs[i] = add_output_impl(*M, TM, timers[i], unopt_out, opt_out, obj_out, asm_out);
+-                // Merge this thread's time trace into the main thread
+-                if (jl_is_timing_trace)
+-                    timeTraceProfilerFinishThread();
 -            });
 -        }
 -
@@ -778,9 +796,9 @@ index 6e86b7d245..af41c48ea5 100644
 +    SmallVector<char, 0> serialized;
 +};
  
- extern int jl_is_timing_passes;
  static unsigned compute_image_thread_count(const ModuleInfo &info) {
-@@ -2176,8 +2196,8 @@ void jl_dump_native_impl(void *native_code,
+     // 32-bit systems are very memory-constrained
+@@ -2189,8 +2209,8 @@ void jl_dump_native_impl(void *native_code,
          OverrideStackAlignment = M.getOverrideStackAlignment();
      });
  
@@ -791,7 +809,7 @@ index 6e86b7d245..af41c48ea5 100644
      };
  
      SmallVector<AOTOutputs, 16> sysimg_outputs;
-@@ -2246,7 +2266,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2259,7 +2279,7 @@ void jl_dump_native_impl(void *native_code,
          // Note that we don't set z to null, this allows the check in WRITE_ARCHIVE
          // to function as expected
          // no need to free the module/context, destructor handles that
@@ -800,7 +818,7 @@ index 6e86b7d245..af41c48ea5 100644
      }
  
      const bool imaging_mode = true;
-@@ -2345,19 +2365,13 @@ void jl_dump_native_impl(void *native_code,
+@@ -2358,19 +2378,13 @@ void jl_dump_native_impl(void *native_code,
      });
  
      {
@@ -826,7 +844,7 @@ index 6e86b7d245..af41c48ea5 100644
      }
  
      if (params->emit_metadata) {
-@@ -2460,7 +2474,7 @@ void jl_dump_native_impl(void *native_code,
+@@ -2473,7 +2487,7 @@ void jl_dump_native_impl(void *native_code,
          }
  
          // no need to free module/context, destructor handles that
@@ -835,7 +853,7 @@ index 6e86b7d245..af41c48ea5 100644
      }
  
      {
-@@ -2568,88 +2582,89 @@ void jl_get_llvmf_defn_impl(jl_llvmf_dump_t *dump, jl_method_instance_t *mi, jl_
+@@ -2581,88 +2595,89 @@ void jl_get_llvmf_defn_impl(jl_llvmf_dump_t *dump, jl_method_instance_t *mi, jl_
              uint8_t measure_compile_time_enabled = jl_atomic_load_relaxed(&jl_measure_compile_time_enabled);
              if (measure_compile_time_enabled)
                  compiler_start_time = jl_hrtime();
@@ -1004,10 +1022,10 @@ index 6e86b7d245..af41c48ea5 100644
          if (F) {
              dump->TSM = wrap(new orc::ThreadSafeModule(std::move(m)));
 diff --git a/src/codegen.cpp b/src/codegen.cpp
-index 95bb5a81a8..e34d6e4d22 100644
+index 612ce788b8..cbc85fa578 100644
 --- a/src/codegen.cpp
 +++ b/src/codegen.cpp
-@@ -7954,7 +7954,7 @@ const char *jl_generate_ccallable(Module *llvmmod, jl_value_t *nameval, jl_value
+@@ -8134,7 +8134,7 @@ const char *jl_generate_ccallable(Module *llvmmod, jl_value_t *nameval, jl_value
          crt = (jl_value_t*)jl_any_type;
      }
      bool toboxed;
@@ -1016,7 +1034,7 @@ index 95bb5a81a8..e34d6e4d22 100644
      if (toboxed)
          lcrt = JuliaType::get_prjlvalue_ty(lcrt->getContext());
      size_t nargs = jl_nparams(sigt)-1;
-@@ -8338,7 +8338,7 @@ static jl_llvm_functions_t
+@@ -8517,7 +8517,7 @@ static jl_llvm_functions_t
      size_t min_world = src->min_world;
      size_t max_world = src->max_world;
      jl_llvm_functions_t declarations;
@@ -1097,10 +1115,10 @@ index 7f79737a9a..7afe83c305 100644
  
      return jl_pchar_to_string(stream.str().data(), stream.str().size());
 diff --git a/src/jitlayers.cpp b/src/jitlayers.cpp
-index a12e0be034..fc330820cb 100644
+index 694d0f1c28..d7eb36772f 100644
 --- a/src/jitlayers.cpp
 +++ b/src/jitlayers.cpp
-@@ -302,8 +302,7 @@ void *jl_jit_abi_converter_impl(jl_task_t *ct, jl_abi_t from_abi,
+@@ -303,8 +303,7 @@ void *jl_jit_abi_converter_impl(jl_task_t *ct, jl_abi_t from_abi,
  
      orc::ThreadSafeModule result_m;
      std::string gf_thunk_name;
@@ -1110,7 +1128,7 @@ index a12e0be034..fc330820cb 100644
          params.getContext().setDiscardValueNames(true);
          params.cache = true;
          params.imaging_mode = 0;
-@@ -323,7 +322,7 @@ void *jl_jit_abi_converter_impl(jl_task_t *ct, jl_abi_t from_abi,
+@@ -324,7 +323,7 @@ void *jl_jit_abi_converter_impl(jl_task_t *ct, jl_abi_t from_abi,
          SmallVector<orc::ThreadSafeModule,0> sharedmodules;
          finish_params(M, params, sharedmodules);
          assert(sharedmodules.empty());
@@ -1119,10 +1137,10 @@ index a12e0be034..fc330820cb 100644
      int8_t gc_state = jl_gc_safe_enter(ct->ptls);
      jl_ExecutionEngine->addModule(std::move(result_m));
      uintptr_t Addr = jl_ExecutionEngine->getFunctionAddress(gf_thunk_name);
-@@ -602,11 +601,12 @@ static void prepare_compile(jl_code_instance_t *codeinst) JL_NOTSAFEPOINT_LEAVE
-             assert(waiting == std::get<1>(it->second));
+@@ -604,11 +603,12 @@ static void prepare_compile(jl_code_instance_t *codeinst) JL_NOTSAFEPOINT_LEAVE
              std::get<1>(it->second) = 0;
              auto &params = std::get<0>(it->second);
+             JL_GC_PROMISE_ROOTED(&params);
 -            params.tsctx_lock = params.tsctx.getLock();
 -            waiting = jl_analyze_workqueue(codeinst, params, true); // may safepoint
 -            assert(!waiting); (void)waiting;
@@ -1137,10 +1155,10 @@ index a12e0be034..fc330820cb 100644
              incompletemodules.erase(it);
          }
          // and then indicate this should be compiled now
-@@ -633,13 +633,14 @@ static void complete_emit(jl_code_instance_t *edge) JL_NOTSAFEPOINT_LEAVE JL_NOT
-         assert(it != incompletemodules.end());
+@@ -636,13 +636,14 @@ static void complete_emit(jl_code_instance_t *edge) JL_NOTSAFEPOINT_LEAVE JL_NOT
          if (--std::get<1>(it->second) == 0) {
              auto &params = std::get<0>(it->second);
+             JL_GC_PROMISE_ROOTED(&params);
 -            params.tsctx_lock = params.tsctx.getLock();
 -            assert(callee == it->first);
 -            orc::ThreadSafeModule &M = emittedmodules[callee];
@@ -1159,7 +1177,7 @@ index a12e0be034..fc330820cb 100644
              incompletemodules.erase(it);
          }
      }
-@@ -659,10 +660,9 @@ static void jl_compile_codeinst_now(jl_code_instance_t *codeinst)
+@@ -662,10 +663,9 @@ static void jl_compile_codeinst_now(jl_code_instance_t *codeinst)
          if (!sharedmodules.empty()) {
              auto TSM = sharedmodules.pop_back_val();
              lock.native.unlock();
@@ -1172,7 +1190,7 @@ index a12e0be034..fc330820cb 100644
              jl_ExecutionEngine->addModule(std::move(TSM));
              lock.native.lock();
          }
-@@ -678,10 +678,9 @@ static void jl_compile_codeinst_now(jl_code_instance_t *codeinst)
+@@ -681,10 +681,9 @@ static void jl_compile_codeinst_now(jl_code_instance_t *codeinst)
              emittedmodules.erase(TSMref);
              lock.native.unlock();
              uint64_t start_time = jl_hrtime();
@@ -1185,7 +1203,7 @@ index a12e0be034..fc330820cb 100644
              jl_ExecutionEngine->addModule(std::move(TSM)); // may safepoint
              // If logging of the compilation stream is enabled,
              // then dump the method-instance specialization type to the stream
-@@ -812,26 +811,31 @@ void jl_emit_codeinst_to_jit_impl(
+@@ -815,26 +814,31 @@ void jl_emit_codeinst_to_jit_impl(
      }
      JL_TIMING(CODEINST_COMPILE, CODEINST_COMPILE);
      // emit the code in LLVM IR form to the new context
@@ -1235,7 +1253,7 @@ index a12e0be034..fc330820cb 100644
      jl_unique_gcsafe_lock lock(engine_lock);
      if (invokenames.count(codeinst) || jl_is_compiled_codeinst(codeinst))
          return; // destroy everything
-@@ -855,16 +859,17 @@ void jl_emit_codeinst_to_jit_impl(
+@@ -858,16 +862,17 @@ void jl_emit_codeinst_to_jit_impl(
      jl_atomic_cmpswap_relaxed(&codeinst->invoke, &expected, jl_fptr_wait_for_compiled_addr);
      invokenames[codeinst] = std::move(decls);
      complete_emit(codeinst);
@@ -1263,7 +1281,7 @@ index a12e0be034..fc330820cb 100644
      emittedmodules[codeinst] = std::move(result_m);
  }
  
-@@ -2188,27 +2193,28 @@ void JuliaOJIT::addModule(orc::ThreadSafeModule TSM)
+@@ -2207,28 +2212,29 @@ void JuliaOJIT::addModule(orc::ThreadSafeModule TSM)
      TSM = selectOptLevel(std::move(TSM));
      TSM = (*Optimizers)(std::move(TSM));
      TSM = (*JITPointers)(std::move(TSM));
@@ -1284,10 +1302,12 @@ index a12e0be034..fc330820cb 100644
  
 -    // Treat this as if one of the passes might contain a safepoint
 -    // even though that shouldn't be the case and might be unwise
+-    TimeTraceScope CompileScope("JIT Compile", M.getModuleIdentifier());
 -    Expected<std::unique_ptr<MemoryBuffer>> Obj = CompileLayer.getCompiler()(M);
 -    if (!Obj) {
 +        // Treat this as if one of the passes might contain a safepoint
 +        // even though that shouldn't be the case and might be unwise
++        TimeTraceScope CompileScope("JIT Compile", M.getModuleIdentifier());
 +        auto Obj = CompileLayer.getCompiler()(M);
 +        if (!Obj) {
  #ifndef __clang_analyzer__ // reportError calls an arbitrary function, which the static analyzer thinks might be a safepoint
@@ -1309,7 +1329,7 @@ index a12e0be034..fc330820cb 100644
      if (Err) {
  #ifndef __clang_analyzer__ // reportError calls an arbitrary function, which the static analyzer thinks might be a safepoint
 diff --git a/src/jitlayers.h b/src/jitlayers.h
-index 5c1fb10a84..abf97e9e0e 100644
+index 614e8c46de..7fd936143a 100644
 --- a/src/jitlayers.h
 +++ b/src/jitlayers.h
 @@ -1,5 +1,6 @@
@@ -1354,19 +1374,18 @@ index 5c1fb10a84..abf97e9e0e 100644
      }
      typedef StringMap<GlobalVariable*> SymMapGV;
      // outputs
-@@ -293,9 +311,9 @@ struct jl_codegen_params_t {
+@@ -293,9 +311,8 @@ struct jl_codegen_params_t {
      bool imaging_mode;
      bool safepoint_on_entry = true;
      bool use_swiftcc = true;
--    jl_codegen_params_t(orc::ThreadSafeContext ctx, DataLayout DL, Triple triple) JL_NOTSAFEPOINT  JL_NOTSAFEPOINT_ENTER
-+    jl_codegen_params_t(orc::ThreadSafeContext ctx,
-+                        DataLayout DL, Triple triple, std::defer_lock_t) JL_NOTSAFEPOINT  JL_NOTSAFEPOINT_ENTER
+-    jl_codegen_params_t(orc::ThreadSafeContext ctx, DataLayout DL, Triple triple) JL_NOTSAFEPOINT
++    jl_codegen_params_t(orc::ThreadSafeContext ctx, DataLayout DL, Triple triple, std::defer_lock_t) JL_NOTSAFEPOINT
        : tsctx(std::move(ctx)),
 -        tsctx_lock(tsctx.getLock()),
          DL(std::move(DL)),
          TargetTriple(std::move(triple)),
          imaging_mode(1)
-@@ -306,8 +324,28 @@ struct jl_codegen_params_t {
+@@ -306,8 +323,28 @@ struct jl_codegen_params_t {
      }
      jl_codegen_params_t(jl_codegen_params_t &&) JL_NOTSAFEPOINT = default;
      ~jl_codegen_params_t() JL_NOTSAFEPOINT JL_NOTSAFEPOINT_LEAVE = default;
@@ -1395,18 +1414,20 @@ index 5c1fb10a84..abf97e9e0e 100644
  const char *jl_generate_ccallable(Module *llvmmod, jl_value_t *nameval, jl_value_t *declrt, jl_value_t *sigt, jl_codegen_params_t &params);
  
  jl_llvm_functions_t jl_emit_code(
-@@ -689,8 +727,9 @@ private:
- extern JuliaOJIT *jl_ExecutionEngine;
- std::unique_ptr<Module> jl_create_llvm_module(StringRef name, LLVMContext &ctx, const DataLayout &DL, const Triple &triple) JL_NOTSAFEPOINT;
- inline orc::ThreadSafeModule jl_create_ts_module(StringRef name, orc::ThreadSafeContext ctx, const DataLayout &DL, const Triple &triple) JL_NOTSAFEPOINT {
+@@ -694,9 +731,10 @@ inline orc::ThreadSafeModule jl_create_ts_module(StringRef name, orc::ThreadSafe
+                                                  const DataLayout &DL, const Triple &triple,
+                                                  Module *source = nullptr) JL_NOTSAFEPOINT
+ {
 -    auto lock = ctx.getLock();
--    return orc::ThreadSafeModule(jl_create_llvm_module(name, *ctx.getContext(), DL, triple), ctx);
+-    return orc::ThreadSafeModule(
+-        jl_create_llvm_module(name, *ctx.getContext(), DL, triple, source), ctx);
 +    return withContextDo(ctx, [&] (LLVMContext *_ctx) JL_NOTSAFEPOINT {
-+        return orc::ThreadSafeModule(jl_create_llvm_module(name, *_ctx, DL, triple), ctx);
++        return orc::ThreadSafeModule(
++            jl_create_llvm_module(name, *_ctx, DL, triple, source), ctx);
 +    });
  }
  
  Module &jl_codegen_params_t::shared_module() JL_NOTSAFEPOINT {
 -- 
-2.51.2
+2.53.0
 

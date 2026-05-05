@@ -3,13 +3,14 @@
 
 pkgname=parallel-disk-usage-git
 _pkgname=${pkgname%-git}
-pkgver=0.21.1.r11.g96978ed
+pkgver=0.23.0.r7.g626e047
 pkgrel=1
 pkgdesc="Summarize disk usage of the set of files, recursively for directories."
 arch=('x86_64' 'aarch64' 'riscv64')
 url="https://github.com/KSXGitHub/${_pkgname}"
 license=('Apache-2.0')
 makedepends=('git' 'cargo')
+checkdepends=('squashfs-tools' 'squashfuse')
 conflicts=("${_pkgname}")
 provides=("${_pkgname}")
 source=("git+${url}.git")

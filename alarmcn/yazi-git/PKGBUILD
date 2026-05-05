@@ -3,21 +3,31 @@
 
 pkgname=yazi-git
 _pkgname=yazi
-pkgver=25.5.31.r189.g2267ac7
+pkgver=26.1.22.r95.g10fc76d
 pkgrel=1
 pkgdesc="Blazing fast terminal file manager written in Rust, based on async I/O."
 url="https://github.com/sxyazi/${_pkgname}"
 arch=("x86_64" "aarch64" "riscv64")
 license=("MIT")
+depends=('glibc' 'hicolor-icon-theme' 'jemalloc' 'libgcc' 'lua' 'oniguruma' 'ttf-nerd-fonts-symbols')
 optdepends=(
 	'ttf-nerd-fonts-symbols: for full display of icons'
-	'jq: for JSON preview'
-	'unarchiver: for archive preview'
 	'ffmpeg: for video thumbnails'
+	'7zip: for archive extraction and preview'
+	'jq: for JSON preview'
+	'poppler: for PDF preview'
 	'fd: for file searching'
 	'ripgrep: for file content searching'
-	'fzf: for directory jumping'
-	'zoxide: for directory jumping')
+	'fzf: for quick file subtree navigation'
+	'zoxide: for historical directories navigation'
+	'resvg: for SVG preview'
+	'imagemagick: for image and font preview'
+	'xclip: for X11 clipboard support'
+	'xsel: for X11 clipboard support'
+	'wl-clipboard: for Wayland clipboard support'
+	'chafa: for ASCII image preview as fallback'
+	'git: for Yazi package management'
+)
 makedepends=("git" "cargo" "imagemagick")
 conflicts=("${_pkgname}")
 provides=("${_pkgname}")
@@ -32,40 +42,51 @@ pkgver() {
 
 prepare() {
 	cd "${_pkgname}/"
-	cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+
+	# Cargo does not provide an option to disable features for all workspace members
+	# Upstream issue: https://github.com/rust-lang/cargo/issues/14866
+	sed -i '/"vendored-lua"/d' yazi-{actor,binding,dds,fm,parser,plugin}/Cargo.toml
+
+	cargo fetch --locked --target host-tuple
 }
 
 build() {
 	cd "${_pkgname}/"
-	YAZI_GEN_COMPLETIONS=true cargo build --frozen --release --all-features
+	export YAZI_GEN_COMPLETIONS=true
+	export RUSTONIG_DYNAMIC_LIBONIG=1
+	export JEMALLOC_OVERRIDE=/usr/lib/libjemalloc.so
+	export CARGO_FEATURE_UNPREFIXED_MALLOC_ON_SUPPORTED_PLATFORMS=1
+	cargo build --frozen --release --no-default-features
 }
 
 check() {
 	cd "${_pkgname}/"
-	cargo test --frozen --all-features
+	export RUSTONIG_DYNAMIC_LIBONIG=1
+	export JEMALLOC_OVERRIDE=/usr/lib/libjemalloc.so
+	export CARGO_FEATURE_UNPREFIXED_MALLOC_ON_SUPPORTED_PLATFORMS=1
+	cargo test --frozen --no-default-features --workspace
 }
 
 package() {
 	cd "${_pkgname}/"
-	install -Dm644 "LICENSE" -t "${pkgdir}/usr/share/licenses/${pkgname}/"
 	install -Dm755 target/release/{${_pkgname},ya} -t "${pkgdir}/usr/bin/"
-	install -Dm644 "assets/${_pkgname}.desktop" -t "${pkgdir}/usr/share/applications/"
+	install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}/"
 
-	local r
-	for r in 16 24 32 48 64 128 256; do
-		install -dm755 "${pkgdir}/usr/share/icons/hicolor/${r}x${r}/apps/"
-		magick assets/logo.png -resize "${r}x${r}" "$pkgdir/usr/share/icons/hicolor/${r}x${r}/apps/${_pkgname}.png"
+	_install_completions "${_pkgname}-boot" "${_pkgname}"
+	_install_completions "${_pkgname}-cli" "ya"
+
+	cd assets
+	install -Dm644 "${_pkgname}.desktop" -t "${pkgdir}/usr/share/applications/"
+	for r in 16 24 32 48 64 128 256 512; do
+		install -Dm644 <(magick logo.png -resize "${r}x${r}" -) "${pkgdir}/usr/share/icons/hicolor/${r}x${r}/apps/${_pkgname}.png"
 	done
-
-	cd "${_pkgname}-boot/completions"
-	_install_completions "${_pkgname}"
-
-	cd "../../${_pkgname}-cli/completions"
-	_install_completions ya
 }
 
 _install_completions() {
-	install -Dm644 "$1.bash" "${pkgdir}/usr/share/bash-completion/completions/$1"
-	install -Dm644 "$1.fish" -t "${pkgdir}/usr/share/fish/vendor_completions.d/"
-	install -Dm644 "_$1" -t "${pkgdir}/usr/share/zsh/site-functions/"
+	pushd "$1/completions"
+	install -Dm644 "$2.bash" "${pkgdir}/usr/share/bash-completion/completions/$2"
+	install -Dm644 "$2.fish" -t "${pkgdir}/usr/share/fish/vendor_completions.d/"
+	install -Dm644 "_$2" -t "${pkgdir}/usr/share/zsh/site-functions/"
+	install -Dm644 "$2.elv" -t "${pkgdir}/usr/share/elvish/lib/"
+	popd
 }

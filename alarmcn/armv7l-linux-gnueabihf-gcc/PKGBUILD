@@ -7,7 +7,7 @@
 _target="armv7l-linux-gnueabihf"
 pkgbase="${_target}-gcc"
 _pkgname=(gcc gcc-libs gcc-fortran gcc-objc)
-pkgver=15.2.1+r301+gf24307422d1d
+pkgver=15.2.1+r604+g0b99615a8aef
 _gccver=${pkgver%%+*}
 _majorver=${_gccver%%.*}
 pkgrel=1
@@ -20,6 +20,7 @@ makedepends=(${_target}-binutils
              libisl
              libmpc
              libxcrypt
+             tar
              zstd
              git)
 if [[ "$pkgver" =~ \+g([0-9a-f]*)$ ]]; then
@@ -30,7 +31,7 @@ fi
 options=(!emptydirs !distcc debug)
 source=("git+https://gcc.gnu.org/git/gcc.git#${_git_ref}"
         gcc-ada-repro.patch)
-sha256sums=('76a99cc53c730139e838ef6c132c0b36b4e511a5c2266b596015d2b765a3fa89'
+sha256sums=('fda170be6da777107c74ad322d51a508edf448b86ce8247755eb0eb1524f38b6'
             '1773f5137f08ac1f48f0f7297e324d5d868d55201c03068670ee4602babdef2f')
 
 _libdir="usr/lib/gcc/${_target}/${_gccver}"
@@ -57,6 +58,8 @@ build() {
   CXXFLAGS=${CXXFLAGS/-Werror=format-security/}
   ASMFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
   export ASMFLAGS
+  export FFLAGS=
+  export FCFLAGS=
 
   "$srcdir/gcc/configure" \
     --prefix=/usr \
@@ -101,8 +104,7 @@ build() {
     --with-float=hard \
     --with-fpu=vfpv3-d16
 
-  # Fills up /tmp on build machine otherwise...
-  make -j1
+  make
 }
 
 package_gcc-libs() {

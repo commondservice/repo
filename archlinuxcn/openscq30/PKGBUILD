@@ -9,8 +9,8 @@ _pkgid=com.oppzippy.$_pname
 
 pkgbase=openscq30
 pkgname=(openscq30-cli openscq30-gui)
-pkgver=2.0.1
-pkgrel=2
+pkgver=2.7.0
+pkgrel=1
 pkgdesc="Cross platform application for controlling settings of Soundcore headphones"
 arch=(x86_64 aarch64)
 url="https://github.com/$_powner/$_pname"
@@ -20,7 +20,7 @@ makedepends=('cargo' "libxkbcommon")
 depends=('libdbus-1.so')
 checkdepends=(xorg-server-xvfb)
 source=("$_pname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha512sums=('fdcfce858f3c4ad24ab7cdaacda18358b089a90ca4d4cb787b35faf344b8bef7caefb7824bf96e0b91df91b996d80ec92cc4dea727242bf6324350356db168fc')
+sha512sums=('c191611aa608af3ed6ffa294420fc97f4bfa4bacb0cea89777d2dfb24e54adf5aa82dfc59ab7df7261c35e7124fe4978138561e116c7b906653eb01984f90fbc')
 
 prepare() {
 	cd "$srcdir/$_pname-$pkgver"
@@ -37,6 +37,8 @@ build() {
 }
 
 check() {
+    # avoid "Too many open files" in test setting_set_and_get_race_condition
+    ulimit -n 3000
 	cd "$srcdir/$_pname-$pkgver"
 	export RUSTUP_TOOLCHAIN=stable
 	# shellcheck disable=SC2046

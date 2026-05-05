@@ -3,7 +3,7 @@
 
 _pkgname="prjapicula"
 pkgname="$_pkgname-git"
-pkgver=0.28.r17.gb56ab7d
+pkgver=0.32.r4.gb2ef92a
 pkgrel=1
 pkgdesc="Project Apicula bitstream documentation for Gowin FPGAs"
 url="https://github.com/YosysHQ/apicula"
@@ -17,19 +17,20 @@ sha256sums=(
 license=('MIT')
 arch=('x86_64')
 
-depends=(
-  'python'
-  'python-crc' # AUR
+depends=("python-cattrs"
+  'python>=3.9'
   'python-numpy'
-  'python-openpyxl'
-  'python-pandas'
-  'python-pillow'
+  'python-msgspec'
+  'python-fastcrc' # AUR
 )
 
 makedepends+=(
   'git'
   'python-build'
   'python-installer'
+  'python-openpyxl'
+  'python-pandas'
+  'python-pillow'
   'python-setuptools'
   'python-setuptools-scm'
   'python-wheel'

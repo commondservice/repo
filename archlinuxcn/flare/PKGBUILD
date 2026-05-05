@@ -2,8 +2,7 @@
 # Contributor: Julian <juliannfairfax@protonmail.com>
 
 pkgname=flare
-pkgver=0.17.5
-_pkgver=${pkgver/beta/-beta/}
+pkgver=0.20.4
 pkgrel=1
 epoch=1
 pkgdesc="Chat with your friends on Signal"
@@ -11,14 +10,29 @@ url="https://gitlab.com/schmiddi-on-mobile/${pkgname}"
 arch=("i686" "x86_64" "armv6h" "armv7h" "aarch64")
 license=("AGPL-3.0-or-later")
 makedepends=("blueprint-compiler" "cargo" "meson")
-depends=("libadwaita" "libsecret" "protobuf" "gtksourceview5" "libspelling")
+depends=(
+	'dconf'
+	'gdk-pixbuf2'
+	'glib2'
+	'glibc'
+	'gtk4'
+	'gtksourceview5'
+	'hicolor-icon-theme'
+	'libadwaita'
+	'libgcc'
+	'libsecret'
+	'libspelling'
+	'pango'
+	'protobuf'
+	'sqlcipher'
+)
 optdepends=("feedbackd: for vibrating notifications")
-source=("${url}/-/archive/${_pkgver}/${pkgname}-${_pkgver}.tar.gz")
-sha256sums=('ebdd2a66dd55fec72dfd24345c4f58aea771986cf0acd80cacbcb03cdd23b767')
+source=("${url}/-/archive/${pkgver}/${pkgname}-${pkgver}.tar.gz")
+sha256sums=('a60b2bd6a11c88f3d3ab611f7cfb083011aeff457ad74b7bef5cb1e32b8e1942')
 
 build() {
-	arch-meson "${pkgname}-${_pkgver}" build
-	CFLAGS+=" -ffat-lto-objects" meson compile -C build
+	arch-meson "${pkgname}-${pkgver}" build
+	LIBSQLITE3_SYS_USE_PKG_CONFIG=1 CFLAGS+=" -ffat-lto-objects" meson compile -C build
 }
 
 check() {
@@ -27,5 +41,5 @@ check() {
 
 package() {
 	meson install -C build --no-rebuild --destdir "${pkgdir}"
-	install -Dm644 ${pkgname}-${_pkgver}/doc/* -t "${pkgdir}/usr/share/doc/${pkgname}/"
+	install -Dm644 ${pkgname}-${pkgver}/doc/* -t "${pkgdir}/usr/share/doc/${pkgname}/"
 }

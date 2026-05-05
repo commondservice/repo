@@ -4,14 +4,14 @@ pkgname=amulet-map-editor
 
 pkgdesc="The new age Minecraft world editor and converter that supports every version since Java 1.12 and Bedrock 1.7"
 url="https://www.amuletmc.com/"
-license=(LicenseRef-none MIT)
+license=(LicenseRef-custom)
 
 arch=(any)
-pkgver=0.10.48
+pkgver=0.10.56a7
 pkgrel=1
 makedepends=(python-build python-installer python-wheel python-cython-lint python-versioneer git python-packaging)
 
-depends=(python python-numpy python-wxpython python-opengl python-amulet-nbt python-pymctranslate python-minecraft-model-reader python-amulet-core python-lz4 python-amulet-leveldb python-pillow glibc hicolor-icon-theme python-platformdirs)
+depends=(python python-numpy python-wxpython python-opengl python-amulet-nbt python-pymctranslate python-minecraft-model-reader python-amulet-core python-lz4 python-amulet-leveldb python-pillow glibc hicolor-icon-theme python-platformdirs python-amulet-rocksdb)
 
 source=(
 	amulet.desktop
@@ -19,7 +19,7 @@ source=(
 )
 
 sha256sums=('724383fa0a28be2ab92785365b7a3695aae5ee7849fc7841b492da73ce60c829'
-            '03174a782c0e5239ff6622b8551908893c435d13212fab8a56e3ef409fc9a8ca')
+            'cd0e9ff6194525a8a90345a312fd61d2b8e40672f3e9c3e8f51eea0b9c6475fb')
 
 function prepare() {
 	sed -i 's/versioneer-518/versioneer/g' "${srcdir}/Amulet-Map-Editor/pyproject.toml"
@@ -39,4 +39,5 @@ function package() {
 	cd "${srcdir}/Amulet-Map-Editor"
 	python -m installer --destdir="${pkgdir}" dist/*.whl
 	rm -rf "${pkgdir}/usr/bin/amulet_map_editor_no_console"
+	install -vDm644 "${srcdir}/Amulet-Map-Editor/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}"
 }

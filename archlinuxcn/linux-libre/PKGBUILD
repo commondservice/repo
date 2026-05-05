@@ -9,7 +9,7 @@
 # Contributor (Parabola): Luke R. <g4jc@openmailbox.org>
 
 pkgbase=linux-libre
-pkgver=6.18.2
+pkgver=7.0.2
 pkgrel=1
 pkgdesc='Linux Libre'
 url='https://linux-libre.fsfla.org/'
@@ -41,19 +41,30 @@ _basever="$({ grep -Eq '[0-9]\.[0-9]+\.[0-9]+' <<< "$pkgver" && printf '%s' "${p
 _srcname="linux-${_basever}"
 source=("https://linux-libre.fsfla.org/pub/linux-libre/releases/${_basever}-gnu/linux-libre-${_basever}-gnu.tar.lz"{,.sign}
         "http://linux-libre.fsfla.org/pub/linux-libre/releases/${pkgver}-gnu/patch-${_basever}-gnu-${pkgver}-gnu.bz2"{,.sign}
-        'https://repo.parabola.nu/other/linux-libre/logos/logo_linux_'{clut224.ppm,vga16.ppm,mono.pbm}{,.sig}
-        'config')
-sha256sums=('ec0e54c200259d2161b1a77c920eda6a206b01948845ae2641a07dfe7880326e'
+        'https://repo.parabola.nu/other/linux-libre/logos/logo_linux_'{clut224.ppm,vga16.ppm,mono.pbm}{,.sig})
+source_x86_64=('config.x86_64')
+sha256sums=('9128326b995ab707f2fbf9908cdb0ec5dc539603154f71229bb9ba7e5ea87a66'
             'SKIP'
-            'de388411db85d75abd435b3348ed10d784a1ea4452750dac766ea8b8c3ff218a'
+            '31aa8f1615437a36ca81b55e8a0710b97097762968422a2c98fc4223dc319c95'
             'SKIP'
             'bfd4a7f61febe63c880534dcb7c31c5b932dde6acf991810b41a939a93535494'
             'SKIP'
             '6de8a8319271809ffdb072b68d53d155eef12438e6d04ff06a5a4db82c34fa8a'
             'SKIP'
             '13bd7a8d9ed6b6bc971e4cd162262c5a20448a83796af39ce394d827b0e5de74'
-            'SKIP'
-            '9381d7cf975ffdd6eee2158df2d63be30911010fa949b9b020e7183e5c342c49')
+            'SKIP')
+sha256sums_x86_64=('67cc372800599cb048054846c0fd562be7a706b824ea288051c15e0bab42cd10')
+b2sums=('953d77c902d1518b0b478e38359c5fc383e61592536421743d860800cd3195258052f4c5ccac5d3b8a60625e4c9fe81f37c3d0c67549699813609de2cf3dc008'
+        'SKIP'
+        '58bb1e154b13957f3ea8a81050bceec638174538533946cfb5e040d37b097f67c63773a92354f68750d563a5a08b7278635f9ac5e73c9a2a7dcd025b02387546'
+        'SKIP'
+        '73fee2ae5cb1ffd3e6584e56da86a8b1ff6c713aae54d77c0dab113890fc673dc5f300eb9ed93fb367b045ece8fa80304ff277fe61665eccf7b7ce24f0c045eb'
+        'SKIP'
+        'd02a1153a4285b32c774dca4560fe37907ccf30b8e487a681b717ed95ae9bed5988875c0a118938e5885ae9d2857e53a6f216b732b6fa3368e3c5fe08c86382c'
+        'SKIP'
+        '580911af9431c066bbc072fd22d5e2ef65f12d8358cec5ff5a4f1b7deebb86cef6b5c1ad631f42350af72c51d44d2093c71f761234fb224a8b9dbb3b64b8201d'
+        'SKIP')
+b2sums_x86_64=('dfe06c0b0c6d1f1986f10846e0cc99f1e674d1bfdeb83be7778ae159366dd42c70e6b2a5998450bf9e658f1958ce10d3bc59ebc3f69b18e951b98695449b0931')
 validpgpkeys=('474402C8C582DAFBE389C427BCB7CF877E7D47A7'  # Alexandre Oliva
               '6DB9C4B4F0D8C0DC432CF6E4227CA7C556B2BA78') # David P.
 
@@ -84,9 +95,9 @@ prepare() {
   done
 
   echo "Setting config..."
-  cp ../config .config
+  cp "../config.${CARCH}" .config
   make olddefconfig
-  diff -u ../config .config || :
+  diff -u "../config.${CARCH}" .config || :
 
   make -s kernelrelease > version
   echo "Prepared $pkgbase version $(<version)"
@@ -105,9 +116,10 @@ _package() {
     kmod
   )
   optdepends=(
-    'wireless-regdb: to set the correct wireless channels of your country'
+    "${pkgbase}-headers: headers and scripts for building modules"
     'linux-firmware: firmware images needed for some devices'
     'scx-scheds: to use sched-ext schedulers'
+    'wireless-regdb: to set the correct wireless channels of your country'
   )
   provides=(
     KSMBD-MODULE
@@ -142,28 +154,37 @@ _package() {
 _package-headers() {
   pkgdesc="Headers and scripts for building modules for the $pkgdesc kernel"
   depends=(pahole)
+  provides=(LINUX-HEADERS)
 
   cd "$_srcname"
   local _builddir="$pkgdir/usr/lib/modules/$(<version)/build"
+
+  local _karch
+  case "$CARCH" in
+    x86_64) _karch='x86' ;;
+    *) echo "Unknown CARCH ${CARCH}"; exit 1 ;;
+  esac
 
   echo "Installing build files..."
   install -Dt "$_builddir" -m644 .config Makefile Module.symvers System.map \
     localversion.* version vmlinux tools/bpf/bpftool/vmlinux.h
   install -Dt "$_builddir/kernel" -m644 kernel/Makefile
-  install -Dt "$_builddir/arch/x86" -m644 arch/x86/Makefile
+  install -Dt "$_builddir/arch/${_karch}" -m644 "arch/${_karch}/Makefile"
   cp -t "$_builddir" -a scripts
   ln -srt "$_builddir" "$_builddir/scripts/gdb/vmlinux-gdb.py"
 
-  # required when STACK_VALIDATION is enabled
-  install -Dt "$_builddir/tools/objtool" tools/objtool/objtool
+  if [[ "$(scripts/config -s CONFIG_HAVE_STACK_VALIDATION)" = 'y' ]]; then
+    install -Dt "${_builddir}/tools/objtool" tools/objtool/objtool
+  fi
 
-  # required when DEBUG_INFO_BTF_MODULES is enabled
-  install -Dt "$_builddir/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+  if [[ "$(scripts/config -s CONFIG_DEBUG_INFO_BTF_MODULES)" = 'y' ]]; then
+    install -Dt "${_builddir}/tools/bpf/resolve_btfids" tools/bpf/resolve_btfids/resolve_btfids
+  fi
 
   echo "Installing headers..."
   cp -t "$_builddir" -a include
-  cp -t "$_builddir/arch/x86" -a arch/x86/include
-  install -Dt "$_builddir/arch/x86/kernel" -m644 arch/x86/kernel/asm-offsets.s
+  cp -t "$_builddir/arch/${_karch}" -a "arch/${_karch}/include"
+  install -Dt "$_builddir/arch/${_karch}/kernel" -m644 "arch/${_karch}/kernel/asm-offsets.s"
 
   install -Dt "$_builddir/drivers/md" -m644 drivers/md/*.h
   install -Dt "$_builddir/net/mac80211" -m644 net/mac80211/*.h
@@ -182,10 +203,20 @@ _package-headers() {
   echo "Installing KConfig files..."
   find . -name 'Kconfig*' -exec install -Dm644 {} "$_builddir/{}" \;
 
+  echo "Installing Rust files..."
+  if [[ "$(scripts/config -s CONFIG_RUST)" = 'y' ]]; then
+    install -Dt "${_builddir}/rust" -m644 rust/*.rmeta
+    install -Dt "${_builddir}/rust" rust/*.so
+  fi
+
+  echo "Installing unstripped VDSO..."
+  make INSTALL_MOD_PATH="${pkgdir}/usr" vdso_install \
+    link=  # Suppress build-id symlinks
+
   echo "Removing unneeded architectures..."
   local arch
   for arch in "$_builddir"/arch/*/; do
-    [[ $arch = */x86/ ]] && continue
+    [[ $arch = */"${_karch}/" ]] && continue
     echo "Removing $(basename "$arch")"
     rm -r "$arch"
   done
@@ -241,7 +272,11 @@ _package-docs() {
   ln -sr "$_builddir/Documentation" "$pkgdir/usr/share/doc/$pkgbase"
 }
 
-pkgname=("$pkgbase" "$pkgbase-headers" "$pkgbase-docs")
+pkgname=(
+    "$pkgbase"
+    "$pkgbase-headers"
+    "$pkgbase-docs"
+)
 for _p in "${pkgname[@]}"; do
   eval "package_$_p() {
     $(declare -f "_package${_p#$pkgbase}")

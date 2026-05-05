@@ -2,7 +2,7 @@
 
 _pkgname=qlog
 pkgname="$_pkgname-git"
-pkgver=0.47.1.r0.g9d661303
+pkgver=0.50.0.r0.g855447b1
 pkgrel=1
 pkgdesc="Amateur radio logbook software"
 arch=("x86_64")

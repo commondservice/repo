@@ -3,7 +3,7 @@
 
 pkgname=clash-verge-rev
 _pkgname=${pkgname%-rev}
-pkgver=2.4.4
+pkgver=2.4.6
 pkgrel=1
 pkgdesc="Continuation of Clash Verge | A Clash Meta GUI based on Tauri"
 arch=('x86_64' 'i686' 'aarch64' 'armv7h')
@@ -14,12 +14,12 @@ conflicts=("${_pkgname}")
 provides=("${_pkgname}")
 makedepends=('pnpm' 'cargo' 'jq' 'moreutils')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/refs/tags/v${pkgver}.tar.gz"
-	"${_pkgname}-service.tar.gz::https://github.com/${pkgname}/${_pkgname}-service/archive/refs/tags/${CARCH}-unknown-linux-gnu.tar.gz")
-sha512sums=('a9ab44fa959ba1d3adfde2ded4e605af9e5506cb7ba06a37b223ef15ce4d9ab4abd557d702c1d6634bee62f88ff4079d82952cc7535b3f801f5fe4180a12ec6b'
-            '9dbce77076b07691b5359b3e91c82190880f6caad291102fa28d8480bba53c27c8bac324032cbfee74e69653e2e97e54c430d17ad4fc5aaeb7a833d1b6598a4b')
+	"${_pkgname}-service-ipc.tar.gz::https://github.com/${pkgname}/${_pkgname}-service-ipc/archive/refs/tags/${CARCH}-unknown-linux-gnu.tar.gz")
+sha512sums=('aed1c5a8636c93c049480a225ac5f2bbe02fb77c8569ef572d0c6af71297d3f3485a83767361de0927345b1141ce98027f046bba6266854dfb07398cee960567'
+            'fccbc1a25697e60cdb190593266f7f68295f15d6524c016cf7837ea20ed54d66226c3eef5366d7ce58145de0d93ca05184db643dac53eab6f3bc988be888b244')
 
 prepare() {
-	pushd "${_pkgname}-service-${CARCH}-unknown-linux-gnu/"
+	pushd "${_pkgname}-service-ipc-${CARCH}-unknown-linux-gnu/"
 	_prepare_service
 	popd
 
@@ -32,7 +32,7 @@ prepare() {
 }
 
 build() {
-	cd "${_pkgname}-service-${CARCH}-unknown-linux-gnu/"
+	cd "${_pkgname}-service-ipc-${CARCH}-unknown-linux-gnu/"
 	export CFLAGS+=" -ffat-lto-objects"
 	export RUSTUP_TOOLCHAIN=stable
 	export CARGO_TARGET_DIR=target
@@ -70,7 +70,7 @@ _package_service() {
 	pushd target/release
 	local _suffix="${CARCH}-unknown-linux-gnu"
 	install -Dm755 "${_pkgname}-service" "${srcdir}/${pkgname}-${pkgver}/src-tauri/resources/${_pkgname}-service-${_suffix}"
-	install -Dm755 install-service "${srcdir}/${pkgname}-${pkgver}/src-tauri/resources/${_pkgname}-service-install-${_suffix}"
-	install -Dm755 uninstall-service "${srcdir}/${pkgname}-${pkgver}/src-tauri/resources/${_pkgname}-service-uninstall-${_suffix}"
+	install -Dm755 clash-verge-service-install "${srcdir}/${pkgname}-${pkgver}/src-tauri/resources/${_pkgname}-service-install-${_suffix}"
+	install -Dm755 clash-verge-service-uninstall "${srcdir}/${pkgname}-${pkgver}/src-tauri/resources/${_pkgname}-service-uninstall-${_suffix}"
 	popd
 }

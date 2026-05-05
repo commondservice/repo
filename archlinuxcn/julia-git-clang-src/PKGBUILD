@@ -1,26 +1,15 @@
 pkgname=julia-git-clang-src
-pkgver=0.19.0
-_commit=aa6520c13b025cf88a5576ad4b83567084b81ff4
-pkgrel=2
+pkgver=0.19.2
+_commit=6515c7319284043e2405172a37e88e6c6f033b4d
+pkgrel=1
 pkgdesc="Clang.jl"
 url="https://github.com/JuliaInterop/Clang.jl.git"
 arch=('any')
 license=('MIT')
 makedepends=(git julia-pkg-scripts)
 depends=(julia-git)
-source=("git+https://github.com/JuliaInterop/Clang.jl.git#commit=$_commit"
-        0001-Support-Clang-20.patch
-        0001-Generate-wrappers-for-clang-21.patch)
-sha256sums=('30f34efe64750c02e093f6dc22ad2030863eba1ba0d4f77e303be8e2cf10de4b'
-            '1e7863313459af9aa036dad9e50e07545147ef9796b112efbbd8cb1cb59d69d5'
-            'da94f9d397c56decd94efc64726a862d38e7f7dbb4fddf5935fe47ee9aa54ff1')
-
-prepare() {
-  cd Clang.jl
-
-  patch -Np1 --no-backup-if-mismatch < "../0001-Support-Clang-20.patch"
-  patch -Np1 --no-backup-if-mismatch < "../0001-Generate-wrappers-for-clang-21.patch"
-}
+source=("git+https://github.com/JuliaInterop/Clang.jl.git#commit=$_commit")
+sha256sums=('d6adad44e348b603692928509289e2dae03821c89147413c22afcf9554435e9b')
 
 package() {
   cd Clang.jl

@@ -1,0 +1,41 @@
+# Maintainer: Klemens Schölhorn <klemens@schoelhorn.eu>
+
+pkgname=python-seafevents
+pkgver=13.0.21
+pkgrel=1
+pkgdesc="Python library for accessing seafile data model"
+arch=('any')
+url="https://github.com/haiwen/seafevents"
+license=('Apache')
+depends=('python')
+makedepends=('python-setuptools')
+source=("https://github.com/haiwen/seafevents/archive/v${pkgver}-server.tar.gz"
+        setup.py.in)
+sha256sums=('6ab3d9dd5cbf25c754c540a7c60a472f5ff2d1f9070a7aa7dbd5848e9509ce4e'
+            'a8aeb5d2b62bb7b5d3468459730418936626f6cd748e35d99c07c6bb989656f7')
+
+package() {
+  depends+=(
+    python-sqlalchemy
+    python-redis
+    python-pyjwt
+    python-pymysql
+    python-flask
+    python-pyexiftool
+    python-beautifulsoup4
+    python-markdown-it-py
+    python-mdit_py_plugins
+    python-linkify-it-py
+    python-scikit-learn
+    python-waitress
+    python-memcached
+  )
+  sed setup.py.in -e "s/@SEAFEVENTS_VERSION@/${pkgver}/g" > setup.py
+  rm -rf build
+  mkdir build/
+  ln -sf ../seafevents-$pkgver-server build/seafevents
+  find seafevents-$pkgver-server/seasearch -type d -exec touch {}/__init__.py \;
+  find seafevents-$pkgver-server/wiki -type d -exec touch {}/__init__.py \;
+  cd build
+  python ../setup.py install --root="$pkgdir/" --optimize=1
+}

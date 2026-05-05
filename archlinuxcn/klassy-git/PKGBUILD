@@ -5,11 +5,11 @@ _pkgname=klassy
 pkgbase="${_pkgname}-git"
 pkgname=("${_pkgname}-git"
          "${_pkgname}-qt5-git")
-pkgver=6.4.breeze6.4.0.r3284.g63d64dd2
+pkgver=6.5.3.r3239.g78b9906a
 pkgrel=1
 pkgdesc='Highly customizable binary Window Decoration, Application Style and Global Theme plugin for recent versions of the KDE Plasma desktop.'
 arch=(x86_64)
-url="https://invent.kde.org/paulm/klassy"
+url="https://github.com/paulmcauley/klassy"
 license=('GPL-2.0-only AND GPL-3.0-only AND GPL-2.0-or-later AND LGPL-2.1-or-later AND MIT')
 replaces=(classik-git)
 depends=(breeze-icons
@@ -47,7 +47,7 @@ pkgver () {
   cd "${_pkgname}"
   # latest tag is not on master branch
   #git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
-  local _latest_tag=$(git tag -l --sort=-creatordate | head -n 1)
+  local _latest_tag=$(git tag -l --sort=-creatordate | head -n 1 | sed 's/^v//')
   local _commit_cnt=$(git rev-list --count HEAD)
   local _commit_hash=$(git rev-parse --short HEAD)
   echo "${_latest_tag}.r${_commit_cnt}.g${_commit_hash}"

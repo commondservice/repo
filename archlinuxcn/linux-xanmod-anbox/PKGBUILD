@@ -72,9 +72,9 @@ fi
 ### IMPORTANT: Do no edit below this line unless you know what you're doing
 
 pkgbase=linux-xanmod-anbox
-_major=6.18
+_major=7.0
 pkgver=${_major}.2
-_branch=6.x
+_branch=7.x
 xanmod=1
 _revision=
 _sf_branch=main
@@ -118,10 +118,10 @@ for _patch in ${_patches[@]}; do
     source+=("${_patch}::https://raw.githubusercontent.com/archlinux/svntogit-packages/${_commit}/trunk/${_patch}")
 done
 
-sha256sums=('9106a4605da9e31ff17659d958782b815f9591ab308d03b0ee21aad6c7dced4b'
+sha256sums=('bb7f6d80b387c757b7d14bb93028fcb90f793c5c0d367736ee815a100b3891f0'
             'SKIP'
-            'f628c47c14ed40f9af1ec026225f396644b546bab539020b02bc31334402b844'
-            '252688b672d7a6982c28120a9509d63d8dda230e3a21bafd1177819ca161c88f')
+            'e844dc162cdcd6c6ed9561bade7c99d50f357ac6834bd5412791a5ffdfa12d83'
+            'f4acc1760990c54348a029315d1505ccb7c7270cd70a9aeb728bffcced51e767')
 
 export KBUILD_BUILD_HOST=${KBUILD_BUILD_HOST:-archlinux}
 export KBUILD_BUILD_USER=${KBUILD_BUILD_USER:-makepkg}
@@ -147,6 +147,9 @@ prepare() {
     msg2 "Applying patch $src..."
     patch -Np1 < "../$src"
   done
+
+  # Address bug https://gitlab.com/xanmod/linux/-/issues/446
+  sed -i '/^[[:space:]]*default "6" if / s/MEMERALDRAPIDS/MEMERALDRAPIDS || X86_NATIVE_CPU/' arch/x86/Kconfig.cpu
 
   # Applying configuration
   cp -vf CONFIGS/x86_64/${_config} .config
@@ -241,7 +244,6 @@ prepare() {
 
   msg2 "make ${_compiler_flags} olddefconfig"
   make ${_compiler_flags} olddefconfig
-  #diff -u CONFIGS/xanmod/gcc/${_config} .config || :
 
   make -s kernelrelease > version
   msg2 "Prepared %s version %s" "$pkgbase" "$(<version)"

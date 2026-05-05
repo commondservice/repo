@@ -3,7 +3,7 @@
 
 pkgname=mpv-git
 _gitname=mpv
-pkgver=0.41.0.r14.g670a266
+pkgver=0.41.0.r603.g3338574
 epoch=1
 pkgrel=1
 pkgdesc='A free, open source, and cross-platform media player (with all possible libs)'
@@ -50,6 +50,7 @@ depends=(
     'rubberband'
     'sdl2'
     'sndio'
+    'subrandr'
     'uchardet'
     'vapoursynth'
     'vulkan-icd-loader'
@@ -62,6 +63,7 @@ depends=(
     'wayland-protocols'
 )
 makedepends=(
+    'amf-headers'
     'git'
     'meson'
     'openal'
@@ -135,6 +137,7 @@ build() {
         '-Duwp=disabled' # Windows
         '-Dvaapi-win32=disabled' # Windows
         '-Dspirv-cross=disabled' '-Dshaderc=disabled' # Windows, see https://github.com/mpv-player/mpv/commit/60a31a8a284e539043c47a33ff90f3d55aade6a8
+        '-Damf=disabled' # TODO: Currently only support DirectX.
         '-Dopensles=disabled' # Android
         '-Degl-android=disabled' # Android
         '-Dandroid-media-ndk=disabled' # Android
@@ -167,6 +170,7 @@ package() {
         'libpulse.so'
         'librubberband.so'
         'libsndio.so'
+        'libsubrandr.so'
         'libva.so' 'libva-x11.so' 'libva-wayland.so' 'libva-drm.so'
         'libvdpau.so'
         'libvulkan.so'

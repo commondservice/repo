@@ -6,17 +6,37 @@
 # Contributor: Integral <integral@member.fsf.org>
 
 pkgname=ocrmypdf
-pkgver=16.12.0
+pkgver=17.4.2
 pkgrel=1
 pkgdesc="A tool to add an OCR text layer to scanned PDF files, allowing them to be searched"
 url="https://github.com/${pkgname}/OCRmyPDF"
 arch=('any')
 license=('MPL-2.0')
-depends=('python>=3.9' 'img2pdf' 'python-pillow' 'tesseract' 'ghostscript' 'unpaper' 'pngquant' 'python-pikepdf' 'python-reportlab' 'python-pdfminer' 'python-tqdm' 'python-pluggy' 'python-rich' 'python-importlib_resources' 'python-packaging' 'python-deprecation')
+depends=(
+	'python>=3.9'
+	'img2pdf'
+	'python-pillow'
+	'tesseract'
+	'ghostscript'
+	'python-pikepdf'
+	'python-reportlab'
+	'python-pdfminer'
+	'python-pluggy'
+	'python-rich'
+	'python-packaging'
+	'python-deprecation'
+	'python-fpdf2'
+	'python-pydantic'
+	'python-uharfbuzz'
+)
 makedepends=('python-setuptools-scm>=7.0.5' 'python-build' 'python-installer' 'python-wheel' 'python-hatchling' 'python-hatch-vcs')
-optdepends=('jbig2enc: Better compression algorithm; results in smaller PDF files')
+optdepends=(
+	'jbig2enc: Better compression algorithm; results in smaller PDF files'
+	'pngquant: support for higher optimization levels'
+	'unpaper: support for cleaning up pagaes before OCR'
+)
 source=("${url}/releases/download/v${pkgver}/${pkgname}-${pkgver}.tar.gz")
-sha256sums=('a0f6509e7780b286391f8847fae1811d2b157b14283ad74a2431d6755c5c0ed0')
+sha256sums=('b564557411c9a2695137cdc34e0a1a5084c5f33d7b3ef593f2659aa6a6a1c3cd')
 install="${pkgname}.install"
 
 build() {
@@ -27,5 +47,4 @@ build() {
 package() {
 	cd "${pkgname}-${pkgver}/"
 	python -m installer --destdir="${pkgdir}" dist/*.whl
-	install -Dm644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}/"
 }

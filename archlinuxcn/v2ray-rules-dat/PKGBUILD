@@ -1,11 +1,11 @@
-# Maintainer: DeepChirp <DeepChirp@outlook.com>
+# Maintainer: DeepChirp <deepchirp@archlinuxcn.org>
 # Maintainer: hour-keeper <lok-ation@outlook.com>
 # Contributor: lilydjwg <lilydjwg@gmail.com>
 # Contributor: Zenvie <134689569+Zenvie@users.noreply.github.com>
 # Contributor: Felix Yan <felixonmars@archlinux.org>
 
 pkgname=v2ray-rules-dat
-pkgver=202512222314
+pkgver=202605042252
 pkgrel=1
 pkgdesc="Enhanced edition of V2Ray rules dat files."
 arch=('any')
@@ -16,8 +16,8 @@ provides=('v2ray-domain-list-community' 'v2ray-geoip' 'xray-geoip' 'xray-geosite
 conflicts=('v2ray-domain-list-community' 'v2ray-geoip' 'xray-geoip' 'xray-geosite')
 source=("geoip-$pkgver.dat::${url}/releases/download/${pkgver}/geoip.dat"
         "geosite-$pkgver.dat::${url}/releases/download/${pkgver}/geosite.dat")
-sha256sums=('cbb1fcde8a419e3658c53a79549239176e7de70765cd645e3f76aed1a47b59f3'
-            '30ee2c927c5719b050f4716efbcda07429b6cc152e300027cc1b24e3d23340dd')
+sha256sums=('a405080a7cf35e3b024730a072937c0dc971e870da7d6616efba3caa693ca60a'
+            'ef893b773158ad2d8672ecbed2026a29c1f619b32899167ea703559a2da5b908')
 
 package() {
     local d

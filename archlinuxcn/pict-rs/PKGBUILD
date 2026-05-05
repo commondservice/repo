@@ -2,7 +2,7 @@
 # Contributor: lifespirit <life@crabs.pro>
 
 pkgname=pict-rs
-pkgver=0.5.19
+pkgver=0.5.23
 pkgrel=1
 pkgdesc="A simple image hosting service"
 arch=('x86_64')
@@ -16,7 +16,7 @@ depends=(
 )
 makedepends=('git' 'cargo' 'protobuf')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
-sha256sums=('e9e846b5be8d0009db8f4a24de51537a7553ff39f1c713d1e85783222e1caca2')
+sha256sums=('a8c3fd800b895124ee24757761920261230f1c5a30b296b3391fd9d9527ac8f9')
 
 prepare() {
 	cd "${pkgname}/"

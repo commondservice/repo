@@ -4,14 +4,14 @@
 _target=arm-none-eabi
 pkgname=$_target-gcc
 pkgver=14.2.0
-pkgrel=1
+pkgrel=2
 #_snapshot=8-20180427
 pkgdesc='The GNU Compiler Collection - cross compiler for ARM EABI (bare-metal) target'
 arch=(aarch64 x86_64)
 url='https://gcc.gnu.org/'
 license=(GPL LGPL FDL)
 depends=($_target-binutils zlib libmpc libisl zstd)
-makedepends=(gmp mpfr $_target-newlib)
+makedepends=(gmp mpfr $_target-newlib tar)
 optdepends=('arm-none-eabi-newlib: Standard C library optimized for embedded systems')
 options=(!emptydirs !lto)
 source=(https://ftp.gnu.org/gnu/gcc/gcc-$pkgver/gcc-$pkgver.tar.xz{,.sig})
@@ -82,6 +82,8 @@ build() {
   # TODO: properly deal with the build issues resulting from this
   CFLAGS=${CFLAGS/-Werror=format-security/}
   CXXFLAGS=${CXXFLAGS/-Werror=format-security/}
+  export FFLAGS=
+  export FCFLAGS=
 
   cd "$srcdir"/build-gcc
   export CFLAGS_FOR_TARGET='-g -Os -ffunction-sections -fdata-sections'

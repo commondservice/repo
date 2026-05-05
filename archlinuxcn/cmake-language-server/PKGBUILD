@@ -2,14 +2,14 @@
 
 pkgname=cmake-language-server
 pkgver=0.1.11
-pkgrel=1
+pkgrel=5
 pkgdesc="Python based cmake language server"
 arch=('any')
 url="https://github.com/regen100/cmake-language-server"
 license=('MIT')
 groups=()
-depends=("python-pygls" "python-pyparsing" "cmake-format" "cmake" "python-pdm-backend")
-makedepends=("python-build" "python-installer" "python-pdm" "python-pdm-pep517")
+depends=("python-pygls" "cmake-format" "cmake")
+makedepends=("python-build" "python-installer" "python-pdm-backend")
 optdepends=()
 provides=()
 conflicts=()
@@ -21,6 +21,10 @@ changelog=
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
 noextract=()
 sha256sums=('67c0ae4749d367f5f3c79f969ae1355f6dac6c287ac9bbfb2e2adcfbe57f7013')
+
+prepare() {
+	find "$srcdir/$pkgname-$pkgver" -type f -name "*.py" -exec sed -i "s/from pygls.server/from pygls.lsp.server/" {} \+
+}
 
 build() {
 	cd "$srcdir/$pkgname-$pkgver"

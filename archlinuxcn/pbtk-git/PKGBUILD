@@ -1,35 +1,41 @@
 # Maintainer: RocketDev <ma2014119@outlook.com>
 
-pkgname=pbtk-git
-pkgver=1.0.5.r14.g5721302
-pkgrel=2
+_pkgbase=pbtk
+pkgname=$_pkgbase-git
+pkgver=1.1.1.post1.r0.g6920d75
+pkgrel=1
 pkgdesc='A toolset for reverse engineering and fuzzing Protobuf-based apps'
-url='https://github.com/marin-m/pbtk'
+url="https://github.com/marin-m/$_pkgbase"
 arch=('any')
 license=('GPL-3.0-only')
 depends=(
-    'python'
-    'python-pyqt5'
-    'python-protobuf'
-    'python-requests'
-    'python-websocket-client'
-    'qt5-webengine'
-    'python-pyqtwebengine'
-    'chromium'
-    'java-runtime'
-    'bash'
-    'jad'
-    'protobuf'
+    python
+    pyside6
+    python-protobuf
+    python-requests
+    python-websocket-client
+    qt6-webengine
+    protobuf
+    sh
+)
+optdepends=(
+    'java-runtime: jar extractor'
+    'jad: jar extractor'
+    'chromium: web extractor'
 )
 makedepends=(
-    'git'
+    git
+    python-build
+    python-setuptools
+    python-installer
+    python-wheel
 )
 source=(
-    "$pkgname::git+https://github.com/marin-m/pbtk"
+    "$pkgname::git+$url.git"
     use-system-binaries.patch
 )
 b2sums=('SKIP'
-        '6a2115edd6af10f929ea477f4dbb9f5018d649ef7b8b8b0993245bb0af8052ea31d4014de0f18946252606441d002b00fcdb0fc2006fbeef209499673ab42a36')
+        '949c242cadf8bd1adfba72a32ab90ab13b6768329b5925d672c224f3798b28eee907565b653b0dd21b569e001f1c03c727b2d38df4fb46c14f63695da3521924')
 
 pkgver() {
     cd "$pkgname"
@@ -37,26 +43,22 @@ pkgver() {
 }
 
 prepare() {
-    cat > pbtk.sh << EOF
-#!/bin/sh
-cd /usr/share/$pkgname
-exec /usr/bin/python gui.py "\$@"
-EOF
     cd "$pkgname"
     patch -p1 < ../use-system-binaries.patch
 }
 
 build() {
     cd "$pkgname"
-    rm -r utils/external/jad utils/external/protoc utils/external/dex2jar/*.bat
-    chmod 0644 *.py */*.py
-    chmod 0755 utils/external/dex2jar/*.sh
+    python -m build --wheel --no-isolation
 }
 
 package() {
-    install -Dm 0755 pbtk.sh "$pkgdir/usr/bin/pbtk"
     cd "$pkgname"
-    install -Dm 0755 -t "$pkgdir/usr/share/$pkgname" gui.py
-    cp -r utils extractors views "$pkgdir/usr/share/$pkgname"
+    python -m installer --destdir="$pkgdir" dist/*.whl
+
+    pushd "$pkgdir$(python -c 'import site; print(site.getsitepackages()[0])')/$_pkgbase"
+    rm -r utils/external/jad utils/external/protoc utils/external/dex2jar/*.bat
+    popd
+
     install -Dm 0644 -t "$pkgdir/usr/share/doc/$pkgname" README.md
 }

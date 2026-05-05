@@ -3,7 +3,7 @@
 # Contributor: Árni Dagur <arnidg@protonmail.ch>
 
 pkgname=xcp
-pkgver=0.24.2
+pkgver=0.24.8
 pkgrel=1
 pkgdesc="An extended 'cp'"
 arch=('i686' 'x86_64' 'armv7h' 'aarch64')
@@ -11,26 +11,26 @@ url="https://github.com/tarka/${pkgname}"
 license=('GPL-3.0-only')
 depends=('gcc-libs')
 makedepends=('cargo')
-source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
-sha256sums=('3fe95dd0e5077c8bf93b606fbb8418a609271c87af77305b4263572b26afaf32')
+source=("${url}/archive/${pkgname}-v${pkgver}.tar.gz")
+sha256sums=('6bb62f8d9421209f1d0b6233c882bd959003042cf6f23ce255a62354b0890f8f')
 
 prepare() {
-	cd "${pkgname}-${pkgver}/"
+	cd "${pkgname}-${pkgname}-v${pkgver}/"
 	cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
 }
 
 build() {
-	cd "${pkgname}-${pkgver}/"
+	cd "${pkgname}-${pkgname}-v${pkgver}/"
 	cargo build --frozen --release --all-features
 }
 
 # check() {
-# 	cd "${pkgname}-${pkgver}/"
+# 	cd "${pkgname}-${pkgname}-v${pkgver}/"
 # 	cargo test --frozen --all-features
 # }
 
 package() {
-	cd "${pkgname}-${pkgver}/"
+	cd "${pkgname}-${pkgname}-v${pkgver}/"
 	install -Dm755 "target/release/${pkgname}" -t "${pkgdir}/usr/bin/"
 
 	cd completions

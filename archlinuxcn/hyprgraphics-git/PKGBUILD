@@ -3,13 +3,26 @@
 
 pkgname=hyprgraphics-git
 _pkgname="${pkgname%-git}"
-pkgver=0.4.0.r0.g8f1bec6
-pkgrel=12
+pkgver=0.5.1.r3.g68d0644
+pkgrel=6
 pkgdesc="Hyprland graphics / resource utilities"
 arch=('x86_64' 'aarch64' 'riscv64')
 url="https://github.com/hyprwm/${_pkgname}"
 license=('BSD-3-Clause')
-depends=('pixman' 'cairo' 'pango' 'hyprutils-git' 'libjpeg' 'libwebp' 'libjxl' 'libspng' 'librsvg')
+depends=(
+	'cairo'
+	'file'
+	'hyprutils-git'
+	'libglvnd'
+	'libheif'
+	'libjpeg'
+	'libjxl'
+	'libpng'
+	'librsvg'
+	'libwebp'
+	'pango'
+	'pixman'
+)
 makedepends=('git' 'cmake')
 source=("git+${url}.git")
 provides=("${_pkgname}" "lib${_pkgname}.so")

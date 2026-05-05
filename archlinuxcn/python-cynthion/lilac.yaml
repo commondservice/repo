@@ -11,12 +11,12 @@ post_build: aur_post_build
 repo_depends:
   - cynthion-firmware-bin
   - python-amaranth
-  - python-apollo
   - python-luna-soc
   - python-luna-usb
   - python-pyfwup
   - python-pygreat
   - python-usb-protocol
+  - python-apollo-fpga
 repo_makedepends:
   - python-pyproject-patcher
 

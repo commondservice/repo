@@ -8,24 +8,27 @@
 
 _target="armv7l-linux-gnueabihf"
 pkgname=${_target}-binutils
-pkgver=2.45.1
+pkgver=2.46
 pkgrel=1
 pkgdesc="A set of programs to assemble and manipulate binary and object files (${_target})"
 arch=(aarch64 armv7h i686 x86_64)
 url='https://www.gnu.org/software/binutils/'
 license=(GPL)
 depends=(glibc zlib elfutils)
-# makedepends=('elfutils')
+makedepends=(git)
 options=(staticlibs !distcc !ccache)
-# source=(https://ftp.gnu.org/gnu/binutils/binutils-$pkgver.tar.xz)
-source=(https://ftpmirror.gnu.org/gnu/binutils/binutils-$pkgver.tar.xz)
-sha256sums=('5fe101e6fe9d18fdec95962d81ed670fdee5f37e3f48f0bef87bddf862513aa5')
+if [[ "$pkgver" =~ \+g([0-9a-f]*)$ ]]; then
+  _git_ref="commit=${BASH_REMATCH[1]}"
+else
+  _git_ref="tag=binutils-${pkgver//./_}"
+fi
+source=("git+https://sourceware.org/git/binutils-gdb.git#${_git_ref}")
+sha256sums=('0a4d90af84c0c310048fa80352178fc16bfb98de6dbf7c7efeb1d7f6276ed011')
 
 prepare() {
   mkdir -p binutils-build
 
-  # cd binutils-gdb
-  cd binutils-$pkgver
+  cd binutils-gdb
 
   # Turn off development mode (-Werror, gas run-time checks, date in sonames)
   sed -i '/^development=/s/true/false/' bfd/development.sh
@@ -39,7 +42,7 @@ prepare() {
 build() {
   cd binutils-build
 
-  "$srcdir/binutils-$pkgver/configure" \
+  "$srcdir/binutils-gdb/configure" \
       --prefix=/usr \
       --program-prefix=${_target}- \
       --with-lib-path=/usr/lib/binutils/${_target} \

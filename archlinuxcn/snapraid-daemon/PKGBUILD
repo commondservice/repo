@@ -1,0 +1,32 @@
+# Maintainer: Hao Long <imlonghao@archlinuxcn.org>
+# Contributor: Andrea Mazzoleni <amadvance@gmail.com>
+
+pkgname=snapraid-daemon
+pkgver=1.9
+pkgrel=1
+pkgdesc="A background service with a built-in Web UI that automates SnapRAID operations"
+arch=('x86_64')
+url="https://www.snapraid.it/"
+license=('GPL-3.0-or-later')
+depends=('glibc' 'zlib' 'zstd' 'snapraid>=14.1')
+makedepends=('zip')
+backup=('etc/snapraidd.conf')
+source=("https://github.com/amadvance/$pkgname/releases/download/v$pkgver/$pkgname-$pkgver.tar.gz")
+b2sums=('f9aabda57c6ab9b1e85d43308c1aa9d7f58e61c18039d93dc08c0a601695810f59649d74993a9a42bc67fbb923e71504b1116c94fbd0422b2111c9bd312448f1')
+
+build() {
+  cd "$pkgname-$pkgver"
+  ./configure --prefix=/usr --sysconfdir=/etc
+  make
+}
+
+package() {
+  cd "$pkgname-$pkgver"
+  make DESTDIR="$pkgdir/" install
+  install -Dm644 snapraidd.yaml "$pkgdir/usr/share/doc/$pkgname/snapraidd.yaml"
+  install -Dm644 AUTHORS "$pkgdir/usr/share/doc/$pkgname/AUTHORS"
+  install -Dm644 HISTORY "$pkgdir/usr/share/doc/$pkgname/HISTORY"
+  install -Dm644 README "$pkgdir/usr/share/doc/$pkgname/README"
+  install -Dm644 commander.zip "$pkgdir/usr/share/snapraidd/commander.zip"
+  install -Dm644 snapraidd.conf.example "$pkgdir/etc/snapraidd.conf"
+}

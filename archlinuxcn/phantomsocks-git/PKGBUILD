@@ -1,10 +1,10 @@
 # Maintainer: detiam <dehe_tian@outlook.com>
-# Maintainer: DeepChirp <DeepChirp@outlook.com>
+# Maintainer: DeepChirp <deepchirp@archlinuxcn.org>
 
 _pkgname=phantomsocks
 pkgname=phantomsocks-git
 pkgver=r319.dcce0a4
-pkgrel=5
+pkgrel=22
 pkgdesc="A cross-platform proxy client/server for Linux/Windows/macOS (resolve both ipv4 and ipv6 dns record)"
 arch=(x86_64)
 url="https://github.com/detiam/$_pkgname"

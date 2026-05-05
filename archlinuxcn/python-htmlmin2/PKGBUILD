@@ -1,0 +1,52 @@
+_pkgname=htmlmin2
+pkgbase=python-htmlmin2
+pkgname=('htmlmin2' 'python-htmlmin2')
+pkgver=0.1.13
+pkgrel=2
+pkgdesc='Configurable HTML Minifier with safety features'
+url='https://htmlmin.readthedocs.io'
+arch=('any')
+license=('BSD-3-Clause')
+makedepends=('python-sphinx' 'python-setuptools' git)
+source=("source::git+https://github.com/wilhelmer/htmlmin#tag=v${pkgver}")
+sha256sums=('1d3e9f8ccb6c7578b64355ed3382fe1392268797d69e2b99249fabb1e8a60802')
+
+prepare() {
+	cd source
+	git clean -fdx
+}
+
+build() {
+	cd source
+	python setup.py build
+	sphinx-build -b text docs docs/_build/text
+	sphinx-build -b man docs docs/_build/man
+}
+
+package_htmlmin2() {
+	depends=('python' 'python-setuptools' 'python-htmlmin2')
+	conflicts=("htmlmin")
+	pkgdesc+=' (CLI)'
+	cd source
+	python setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+	install -d "${pkgdir}/usr/share/"{licenses,doc,man/man1}
+	ln -s /usr/share/licenses/python-htmlmin2 "${pkgdir}/usr/share/licenses/${pkgname}"
+	ln -s /usr/share/doc/python-htmlmin2 "${pkgdir}/usr/share/doc/${pkgname}"
+	ln -s /usr/share/man/man1/python-htmlmin2.1.gz "${pkgdir}/usr/share/man/man1/htmlmin2.1.gz"
+	rm -r "${pkgdir}"/usr/lib
+}
+
+package_python-htmlmin2() {
+	depends=('python')
+	conflicts=("python-htmlmin")
+	cd source
+	python setup.py install --root="${pkgdir}" --optimize=1 --skip-build
+	install -Dm 644 README.rst CHANGELOG -t "${pkgdir}/usr/share/doc/${pkgname}"
+	install -Dm 644 LICENSE -t "${pkgdir}/usr/share/licenses/${pkgname}"
+	install -Dm 644 docs/_build/text/*.txt -t "${pkgdir}/usr/share/doc/${pkgname}"
+	install -Dm 644 docs/_build/man/htmlmin.1 "${pkgdir}/usr/share/man/man1/${pkgname}.1"
+	rm \
+		-r \
+		"${pkgdir}"/usr/lib/python*/site-packages/htmlmin*/tests \
+		"${pkgdir}/usr/bin"
+}

@@ -2,7 +2,7 @@
 
 pkgname=sing-box-alpha
 _pkgname=sing-box
-pkgver=1.13.0alpha.33
+pkgver=1.14.0alpha.21
 _pkgver=$(echo "${pkgver}" | sed 's/\([0-9]\+\.[0-9]\+.[0-9]\+\)\(alpha\|beta\|rc\)/\1-\2/')
 pkgrel=1
 epoch=1
@@ -13,25 +13,29 @@ url='https://sing-box.sagernet.org/'
 license=('custom:GPL-3.0-or-later WITH name use or association addition')
 
 depends=('glibc')
-makedepends=('go')
+makedepends=('go' 'clang' 'lld')
 
 source=("${_pkgname}-${_pkgver}.tar.gz::https://github.com/SagerNet/sing-box/archive/v${_pkgver}.tar.gz")
-sha256sums=('3ec532d728d6e8924a4d5984cb611764f745cbe7e3bf075c12a7081c56a9fa32')
+sha256sums=('c07c9d8572cfcfc3f618604951294dc81e14e7bf0fe75ffd42597298721e37cb')
 
 provides=("${_pkgname}")
 conflicts=("${_pkgname}")
 
 backup=("etc/${_pkgname}/config.json")
 
-_tags=with_gvisor,with_quic,with_wireguard,with_utls,with_clash_api,with_acme,with_dhcp,with_tailscale
 build() {
     cd "${_pkgname}-${_pkgver}"
 
     export CGO_CPPFLAGS="${CPPFLAGS}"
     export CGO_CFLAGS="${CFLAGS}"
     export CGO_CXXFLAGS="${CXXFLAGS}"
-    export CGO_LDFLAGS="${LDFLAGS}"
+    export CGO_LDFLAGS="${LDFLAGS} -fuse-ld=lld"
     export CGO_ENABLED=1
+    export CC=clang
+    export CXX=clang++
+
+    local TAGS=$(cat release/DEFAULT_BUILD_TAGS)
+    local LDFLAGS_SHARED=$(cat release/LDFLAGS)
 
     ldflags=(
         "-X"
@@ -40,10 +44,9 @@ build() {
         "-w"
         "-buildid="
         "-linkmode=external"
-        "-checklinkname=0"
+        "${LDFLAGS_SHARED}"
     )
-    ldflags_string=$(printf "%s " "${ldflags[@]}")
-    # echo "ldflags: ${ldflags_string}"
+    ldflags_string="${ldflags[*]}"
 
     go build \
         -v \
@@ -51,7 +54,7 @@ build() {
         -buildmode=pie \
         -mod=readonly \
         -modcacherw \
-        -tags "${_tags}" \
+        -tags "${TAGS}" \
         -ldflags "${ldflags_string}" \
         ./cmd/sing-box
 

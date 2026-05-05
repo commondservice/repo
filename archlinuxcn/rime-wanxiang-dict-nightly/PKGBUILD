@@ -3,7 +3,7 @@
 pkgbase=rime-wanxiang-dict-nightly
 _pkgbase=${pkgbase%-dict-nightly}
 pkgname=(rime-wanxiang-dict-nightly rime-wanxiang-pro-dict-nightly)
-pkgver=13.9.0+r20251222.223325
+pkgver=15.9.9+r20260505.141343
 _schema_version=${pkgver%%+*}
 pkgrel=1
 pkgdesc="万象词库——每日构建版"
@@ -12,29 +12,33 @@ license=('CC-BY-4.0')
 
 url="https://github.com/amzxyz/rime_wanxiang"
 source=("${url}/archive/refs/tags/v${_schema_version}.tar.gz"
-        build.sh)
-b2sums=('9fab6614a604f390c6b3cbc483ecbb6724618a79773a867efc97612a6e27b61fda771ad0e3af79b91cdc3913908a43968227542f13fbcb39268b17c63d438971'
-        'e1c0a4adf4a6175ac1343c9d94d5deb6d3e134b5258111849cc714893bb1fb70d308ffb900969e510087c59489318678a3e4ad88c8a134f03d90722a1202a672'
-        'e4349bf8db09498dc8b8ebc826657ca9ae01af46c305d41b7d54eb35b5afac54a4a10ed041a252adc112c2667aa8a820b8536de400515392c3055092499b7a1e'
-        '052fdce90baaeaeb6415e4540d9433e4343a101ee604c51fe16ae4da1a46d4ea5d7b989969fe7c34f67f5176a2d890a3ed24e7a63739794578d3e7de681f04b2'
-        '54fb85751e881bfcb111fc15743dbd2a3a82a778e1091bf90767eee62463778971a9760e543c3cdb1a70057a96087ebb4e9fc00343e33bab3b1d5512ef2bff28'
-        'c9ca55290b7e989d3c08d2a79478809bae99abd018aaf3da2ef48a7e6888b807a3fbc96e723b5bb749c0eb5254b80f59cdd66b933d0cfff95f2428908fc217a3'
-        'e10f6cc178066d7950291dae22a7bd0831d1ac2d16841a9bac055b9cc4614cfb9c3a862209967b7391cad818e25500bf9df46ef32dd6d174c39b9b4aaec5a2bc'
-        '259596e7682535fa3bdb3975c40acdc141c13c1daa54afc8249bc9e5e796f7124d7a6a31e14e2007799fcfe0ae8d6e2d9ca70b2f15f0f0908dae8dcaa5f46b7c'
-        '69e60f6a24848b13c86994ce554b547b97956245b186abd273f5825acf051b5e88dbf2d234826815ff4c1bbff52e00215f3efa8aa0d71b8cfc0705002dde434d'
-        'a4f867cc9d6411861663fe38475c876cf934cc06ca780658c6dbc4c1fd04a83e249ff7dd222ba0103d5af6c6f6c926e4d443f6b5de91b3411707642b7ca699e6')
+    build.sh)
+b2sums=('d10571dcf20fdb0844a71866e6c2ca65875e2c67bc201c2476196eee940848a831954a4e2020f0f2e37deafd981f258ab25f73020aa9121efa5d5ca6ddfbcffc'
+        '1c101a06e52afabaa5a2619022644ad1093449897b5e03abda85d604c4c9a39fe23248e543ab62b9dcafc5ab829b8dc14d4acd22f509124d25648b5d3bab2f8a'
+        'dcc10fba4c23323877d2af261e5ed9efe1b1fcdd495201dce1fc3f3cd8950101059fa6061d3e2825c3dd6fd37883d7703ec07021d7135f4d7e11070e7783ac67'
+        'ef1d02dfa31429044e686dde8ee70477b599d055a797df09be1c0de9b2366505c9e6cce7dc0665a0e013d6cd7580fb587ef191d76d44bcda407caeb6881a968b'
+        '25eb657d83143a8925bee621c196ee8419e6c5c8750d77c7dc7076803fbfa9620b9af976dbcafcd3bdd3384e36f3afa000598f031d2dc1c16db2e380570e571d'
+        'c9397bd830b9e66f0f645fc150d8631efca1f4617d8bd754235e062c348711ab53ad1d8ab212afefa2728c7c78d05867de29fc7f2cb4b2077155cf57b68e29b1'
+        '96ef60aa76fcc5568782df5bdfeed47b5b22cbec9487b6aa68ec56defa59a4eaf5f7c9614cf24ed256a9f53aae53a9c5945f469d57a390cef209c95e5e6245b6'
+        '31d85476967077129dd1abb975f7eddec7f266f6ee3afcd2a39417ea1b187b9659944a2d8ab735dd5f7353147dd1499010b3127962a8421968ea3d4afbcf83de'
+        'b22c6078bd61eab046da9731945cfcbcaa5ed7418fd854997d6fa0625fa3fc2467a58ac42f16f7d9d4d4bfbb2323b871afea098e942332b6f0130b25dbfba70a'
+        '8420eca61a4ad3e5a55640cf5d6e68e1522fe7761376ec122a64d030079c4e39040fafd1d9e70702bbae2e2860a8eefe17ba210498608176b125c132e1cd5eaf'
+        'fb752ae51d036fc9936bde667ff0fa7080f25fb81d9b2daddb4e82e3ce31889192ef7f8dab58f6a457e85feb2dcbe24cd3dfa971ffa6a0786c7211dcbe944d25'
+        '0f7660526b19574f68155fb350dce759835b690449eb2253155b497f032aa8aa9fd76cdbd07bece2813f23482fbef40df17f2235224e478a96e49a80ccc6db9b')
 noextract=()
-makedepends=("librime" "rime-prelude" "rime-essay" "sed" "python" "zip" "rsync")
+makedepends=("librime" "rime-prelude" "rime-essay" "python" "zip" "rsync")
 
 declare -A _dict_filenames=(
-  [base]="base-dicts.zip"
-  [flypy]="pro-flypy-fuzhu-dicts.zip"
-  [hanxin]="pro-hanxin-fuzhu-dicts.zip"
-  [moqi]="pro-moqi-fuzhu-dicts.zip"
-  [tiger]="pro-tiger-fuzhu-dicts.zip"
-  [wubi]="pro-wubi-fuzhu-dicts.zip"
-  [zrm]="pro-zrm-fuzhu-dicts.zip"
-  [shouyou]="pro-shouyou-fuzhu-dicts.zip"
+    [base]="base-dicts.zip"
+    [flypy]="pro-flypy-fuzhu-dicts.zip"
+    [hanxin]="pro-hanxin-fuzhu-dicts.zip"
+    [moqi]="pro-moqi-fuzhu-dicts.zip"
+    [shouyou]="pro-shouyou-fuzhu-dicts.zip"
+    [shyplus]="pro-shyplus-fuzhu-dicts.zip"
+    [tiger]="pro-tiger-fuzhu-dicts.zip"
+    [wubi]="pro-wubi-fuzhu-dicts.zip"
+    [wx]="pro-wx-fuzhu-dicts.zip"
+    [zrm]="pro-zrm-fuzhu-dicts.zip"
 )
 
 for _dict in "${!_dict_filenames[@]}"; do
@@ -53,24 +57,31 @@ declare -A _schemas=(
     [sogou]="搜狗双拼"
     [abc]="智能ABC"
     [ziguang]="紫光双拼"
-    # [pyjj]="拼音加加"
+    [pyjj]="拼音加加"
     # [gbpy]="国标双拼"
     # [lxsq]="乱序17"
+    [pinyin]="全拼"
+    # [wxsp]="万象双拼"
     # [zrlong]="自然龙"
     # [hxlong]="汉心龙"
-    [pinyin]="全拼"
 )
 
 # 辅助码类型
 declare -A _fuzhus=(
-  [zrm]="自然码"
-  [moqi]="墨奇"
-  [flypy]="小鹤"
-  [hanxin]="汉心"
-  [wubi]="五笔前2"
-  [tiger]="虎码首末"
-  [shouyou]="首右"
+    [shouyou]="首右"
+    [zrm]="自然码"
+    [tiger]="虎码首末"
+    [moqi]="墨奇"
+    [shyplus]="首右+"
+    [flypy]="小鹤"
+    [wx]="万象"
+    [wubi]="五笔前2"
+    [hanxin]="汉心"
 )
+
+eval "_build() {
+    bash \"\${srcdir}/build.sh\" '$(declare -p _schemas | sed 's/declare -A _schemas=/declare -A schemas=/')'
+}"
 
 build() {
     cd "${srcdir}/rime_wanxiang-${_schema_version}" || exit 1
@@ -78,7 +89,8 @@ build() {
     msg2 "release building..."
     bash .github/workflows/scripts/release-build.sh >/dev/null
 
-    msg2 "updating dicts..."
+    rm -rf dist/*.zip
+
     for zip_file in "${srcdir}"/*.zip; do
         local tmp_dir
         tmp_dir="${srcdir}"/$(basename "$zip_file" | sed -E "s/pro-//; s/\.zip//;")
@@ -87,6 +99,7 @@ build() {
     done
 
     local _dir && for _dir in dist/*; do
+        msg2 "updating dicts for ${_dir} ..."
         [[ ! -d $_dir ]] && continue
         (
             local target_dir && target_dir=$(realpath "$_dir"/dicts) && rm -rf "${target_dir:?}"/*
@@ -98,11 +111,11 @@ build() {
     done
 
     msg2 "schema building..."
-    bash "${srcdir}"/build.sh
+    _build
 }
 
 _package() {
-    dist_dir=${1//rime-wanxiang-} && dist_dir=${dist_dir//-nightly}
+    dist_dir=${1//rime-wanxiang-/} && dist_dir=${dist_dir//-nightly/}
     cd "${srcdir}/dist/${dist_dir}" || exit 1
     find . -type f -exec install -Dm664 {} "${pkgdir}"/usr/share/rime-data/{} \;
 }

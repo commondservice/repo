@@ -1,0 +1,30 @@
+# Maintainer: Scott Alfter <scott@alfter.us>
+# Contributor: xiretza <xiretza+aur@xiretza.xyz>
+
+_pkgname=amaranth-stubs
+pkgname="python-$_pkgname"
+pkgver=0.2.0
+pkgrel=1
+pkgdesc="Type stubs for Amaranth"
+arch=(any)
+url="https://github.com/kuznia-rdzeni/amaranth-stubs"
+license=('BSD-3-Clause')
+depends=('python' 'python-amaranth')
+makedepends=('git' 'python-build' 'python-installer' 'python-wheel'
+             'python-setuptools-scm' 'python-packaging')
+source=("git+https://github.com/kuznia-rdzeni/amaranth-stubs.git#tag=v${pkgver}")
+sha512sums=('4f69ddb9c73bf8e544a8e91ce35d4af6243f5a1644092fe0031ff0abee20fd1a12ebd9d3c05fd84457051bd07ed94d5a73dc6ffa24cf52924c71925800d06f21')
+
+build() {
+  cd "${_pkgname}"
+
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd "${_pkgname}"
+
+  python -m installer --destdir="$pkgdir" dist/*.whl
+
+  install -Dm 644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

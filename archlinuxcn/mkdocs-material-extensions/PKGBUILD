@@ -1,0 +1,23 @@
+pkgname="mkdocs-material-extensions"
+pkgver=1.3.1
+pkgrel=2
+pkgdesc="Markdown extension resources for MkDocs Material"
+url="https://github.com/facelessuser/mkdocs-material-extensions"
+license=("MIT")
+arch=("any")
+provides=("mkdocs-material-extensions")
+depends=("mkdocs" "python-pymdown-extensions")
+makedepends=("python-build" "python-installer" "python-wheel" "python-hatchling" git)
+source=("source::git+$url.git#tag=${pkgver}")
+b2sums=('fcf9664a7ca9014c446154a62fa98c562413144cc5eaf2685467ac6ad18254518e8f076bfbc968a0018d8ee9cb36caeb1a57875d38fb1a0582b572725dd341dc')
+
+build(){
+	cd source
+	git clean -fdx
+	python -m build --wheel --no-isolation
+}
+
+package(){
+	cd source
+	python -m installer --destdir="${pkgdir}" dist/*.whl
+}

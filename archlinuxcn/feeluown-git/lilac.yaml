@@ -4,7 +4,13 @@ maintainers:
 
 build_prefix: extra-x86_64
 
+repo_depends:
+ - python-langcodes
+ - python-fluent.runtime
+
 update_on:
+  - source: aur
+    aur: feeluown-git
   - source: github
     github: feeluown/FeelUOwn
   - alias: python

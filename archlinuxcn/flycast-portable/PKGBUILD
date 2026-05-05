@@ -1,0 +1,58 @@
+# Maintainer: Kimiblock Moe
+
+pkgname=flycast-portable
+pkgver=2.6
+pkgrel=1
+epoch=1
+pkgdesc='Sega Dreamcast, Naomi, and Atomiswave emulator. Sandboxed with automatic GPU selection.s'
+url="https://github.com/flyinghead/flycast"
+license=('GPL-2.0-only')
+arch=('x86_64')
+groups=()
+options=(!debug !strip)
+depends=("portable")
+conflicts=(flycast)
+
+optdepends=()
+
+makedepends+=(flycast)
+
+checkdepends=()
+
+source=(
+	portable-config
+	desktop.file
+)
+
+
+md5sums=('48dc55834b6fea2f10918d0a897d20b4'
+         'ce9ccf868c3e7b76819a386c7f7f368a')
+function package() {
+	depends+=(
+		'alsa-lib'
+		'glslang'
+		'hicolor-icon-theme'
+		'libao'
+		'libcdio'
+		'libjuice'
+		'libpulse'
+		'libzip'
+		'miniupnpc'
+		'sdl2'
+		libstdc++
+		glibc
+		libgcc
+	)
+
+	install -vDm755 /usr/bin/flycast -t "${pkgdir}"/usr/lib/portable/overlay-usr
+	export pkgdir
+	export pkgname
+	export srcdir
+	portable-packer \
+		-v \
+		--distro arch \
+		--mode copy flycast \
+		--hash true \
+		--config "${srcdir}/portable-config" \
+		--desktop-file "${srcdir}/desktop.file"
+}

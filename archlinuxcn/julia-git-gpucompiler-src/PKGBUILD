@@ -1,23 +1,15 @@
 pkgname=julia-git-gpucompiler-src
-pkgver=1.7.5
-_commit=619597021afc9a48a7157dc74cc43fda61862991
-pkgrel=3
+pkgver=1.8.2
+_commit=1bb5d647be306b366f9636e303dc6e1e05a49092
+pkgrel=1
 pkgdesc="GPUCompiler.jl"
 url="https://github.com/JuliaGPU/GPUCompiler.jl.git"
 arch=('any')
 license=('MIT')
 makedepends=(git julia-pkg-scripts)
 depends=(julia-git)
-source=("git+https://github.com/JuliaGPU/GPUCompiler.jl.git#commit=$_commit"
-        0001-Fix-loading.patch)
-sha256sums=('8b4015748b0820080b22a7238e07476e6f95d202b325aefcc6543ea227b31733'
-            '387124eb5ca206f996bd011165ee7e7a2c8c78c728d6d8f4801fb118f2357373')
-
-prepare() {
-  cd GPUCompiler.jl
-
-  patch -Np1 --no-backup-if-mismatch < "../0001-Fix-loading.patch"
-}
+source=("git+https://github.com/JuliaGPU/GPUCompiler.jl.git#commit=$_commit")
+sha256sums=('95e3bf14b83e4d625297c9597e185652a35a5b89de2d40412b6770285274ea55')
 
 package() {
   cd GPUCompiler.jl

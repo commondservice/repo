@@ -4,7 +4,7 @@
 # Contributor: Brian <brain@derelict.garden>
 
 pkgname=ladybird-git
-pkgver=r73611.2bd6bf69ac3
+pkgver=r77657.c7e24fce2f4
 pkgrel=1
 pkgdesc='Truly independent web browser'
 arch=(x86_64)
@@ -14,6 +14,7 @@ conflicts=(ladybird)
 provides=(ladybird)
 depends=(
 	curl
+	fmt
 	dbus
 	fast_float
 	ffmpeg
@@ -45,16 +46,24 @@ depends=(
 	hicolor-icon-theme
 
 	libpng-apng # Should be AUR apng variant
+	simdjson
 	angle
-	simdutf
+	opendht
 	cpptrace
+	mimalloc
 )
-makedepends=(autoconf-archive automake cmake git nasm ninja patchelf skia-static tar unzip zip libpng-apng)
+makedepends=(autoconf-archive automake cmake git nasm ninja patchelf skia-static tar unzip zip libpng-apng rust cargo)
 options=('!lto' '!staticlibs' '!emptydirs' '!debug')
 source=(
 	"git+$url"
 )
 sha256sums=('SKIP')
+
+prepare() {
+	cd ladybird
+	sed -i "s|78.2|78.3|g" Libraries/LibUnicode/CMakeLists.txt || true
+	sed -i "s|78.2|78.3|g" Meta/CMake/check_for_dependencies.cmake || true
+}
 
 pkgver() {
 	cd ladybird

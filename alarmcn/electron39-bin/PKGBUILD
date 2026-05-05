@@ -1,0 +1,68 @@
+# Maintainer: zxp19821005 <zxp19821005 at 163 dot com>
+# Co-maintainer: Yurii Kolesnykov <root@yurikoles.com>
+# Based on extra/electron* by
+# Bruno Pagani <archange@archlinux.org>
+# Caleb Maclennan <caleb@alerque.com>
+_projectname=electron
+_major=39
+_pkgname="${_projectname}${_major}"
+pkgname="${_pkgname}"-bin
+_subver="8.9"
+_pkgver="${_major}.${_subver}"
+pkgver="${_pkgver/-/.}"
+pkgrel=1
+pkgdesc="Build cross platform desktop apps with web technologies — prebuilt"
+arch=(
+    'aarch64'
+    'armv7h'
+    'x86_64'
+)
+url='https://electronjs.org'
+_ghurl="https://github.com/electron/electron"
+license=(
+    'MIT'
+    'LicenseRef-custom'
+)
+provides=(
+    "${_pkgname}=${pkgver}"
+)
+conflicts=("${_pkgname}")
+depends=(
+    'alsa-lib'
+    'gtk3'
+    'nss'
+)
+optdepends=(
+    'kde-cli-tools: file deletion support (kioclient5)'
+    'pipewire: WebRTC desktop sharing under Wayland'
+    'qt6-base: enable Qt6 with --enable-features=AllowQt'
+    'gtk4: for --gtk-version=4 (GTK4 IME might work better on Wayland)'
+    'trash-cli: file deletion support (trash-put)'
+    "xdg-utils: open URLs with desktop's default (xdg-email, xdg-open)"
+)
+source_aarch64=(
+    "${_pkgname}-chromedriver-${pkgver}-aarch64.zip::${_ghurl}/releases/download/v${_pkgver}/chromedriver-v${_pkgver}-linux-arm64.zip"
+    "${_pkgname}-${pkgver}-aarch64.zip::${_ghurl}/releases/download/v${_pkgver}/electron-v${_pkgver}-linux-arm64.zip"
+)
+source_armv7h=(
+    "${_pkgname}-chromedriver-${pkgver}-armv7h.zip::${_ghurl}/releases/download/v${_pkgver}/chromedriver-v${_pkgver}-linux-armv7l.zip"
+    "${_pkgname}-${pkgver}-armv7h.zip::${_ghurl}/releases/download/v${_pkgver}/electron-v${_pkgver}-linux-armv7l.zip"
+)
+source_x86_64=(
+    "${_pkgname}-chromedriver-${pkgver}-x86_64.zip::${_ghurl}/releases/download/v${_pkgver}/chromedriver-v${_pkgver}-linux-x64.zip"
+    "${_pkgname}-${pkgver}-x86_64.zip::${_ghurl}/releases/download/v${_pkgver}/electron-v${_pkgver}-linux-x64.zip"
+)
+sha256sums_aarch64=('276aedebc81eb62b7ae8f84066c8973fb7e9b273dbbea8362960d68ca87440d3'
+                    'c0cb946a480b0f4a6dfdbed3287fd38b099b749696d7b9107e24287aa9eded97')
+sha256sums_armv7h=('fcc4530933f100a2aef219478bb15ead89da64da1b80e393152195b34468cec6'
+                   'e16173659ba8d982ad5718309d0eb22f793c6a58e9c0fd2e518ef5f045d96b40')
+sha256sums_x86_64=('dbff1ba3f73432215eb2968a00374a6f8e1028eae155c228fec034037e2deb14'
+                   '9473c2773377344fd8822fe0255a1d2bff00b4f4b3e1fe8acadea00164e56c33')
+package() {
+    install -Dm755 -d "${pkgdir}/usr/"{bin,lib/"${_pkgname}"}
+    find "${srcdir}" -mindepth 1 -maxdepth 1 -type f ! -name "*.zip" ! -name "LICENSE*" -exec cp -r --no-preserve=ownership --preserve=mode -t "${pkgdir}/usr/lib/${_pkgname}/." {} +
+    cp -r --no-preserve=ownership --preserve=mode "${srcdir}/"{locales,resources} "${pkgdir}/usr/lib/${_pkgname}"
+    chmod u+s "${pkgdir}/usr/lib/${_pkgname}/chrome-sandbox"
+    ln -nfs "/usr/lib/${_pkgname}/${_projectname}" "${pkgdir}/usr/bin/${_pkgname}"
+    install -Dm644 "${srcdir}/LICENSE"* -t "${pkgdir}/usr/share/licenses/${pkgname}"
+}

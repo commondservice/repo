@@ -2,7 +2,7 @@
 
 _name=ckzg
 pkgname=python-${_name}
-pkgver=2.1.5
+pkgver=2.1.7
 pkgrel=1
 pkgdesc="A minimal implementation of the Polynomial Commitments API for EIP-4844 and EIP-7594, written in C."
 arch=(x86_64)
@@ -12,15 +12,14 @@ depends=(glibc python)
 makedepends=(git python-build python-installer python-setuptools python-wheel)
 source=(git+https://github.com/ethereum/c-kzg-4844.git#tag=v$pkgver
         git+https://github.com/supranational/blst.git)
-sha512sums=('7b4e63704777bed6bc52f98695c45e6449c879fb3490c1126776f8547cd59226d321f7c33e5a8e89173018f2947117b930319894fbb22a757ec8fced5988c5fc'
+sha512sums=('cc5b3e84f52dc5be98f41d18f7d2487d1e2ebd1b24415bb6282b41978818f01e13dfb87ff220d0a2ba2594e8122f1e9648f54f8fa32a987aa3ac53bb6aaba2dd'
             'SKIP')
 
 prepare() {
   cd c-kzg-4844
-  git config --global protocol.file.allow always
   git submodule init blst
   git config submodule.blst.url ../blst
-  git submodule update blst
+  git -c protocol.file.allow=always submodule update blst
 
   # Conflict with $CFLAGS
   sed -i 's/-Werror//g' src/Makefile

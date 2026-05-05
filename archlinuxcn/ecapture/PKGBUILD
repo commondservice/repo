@@ -3,7 +3,7 @@
 # Contributor: Y7n05h <Y7n05h@y7n05h.dev>
 
 pkgname=ecapture
-pkgver=1.5.1
+pkgver=2.3.0
 pkgrel=1
 pkgdesc="capture SSL/TLS text content without CA cert using eBPF"
 arch=("x86_64" "aarch64")
@@ -12,10 +12,10 @@ license=("Apache-2.0")
 provides=("ecapture")
 conflicts=("ecapture-bin")
 source=("${pkgname}::git+${url}#tag=v${pkgver}")
-sha256sums=('90f45437426a11ed78c2e8f412ca920d33e415914b9c7ed4eb29a87cc6b4fa16')
+sha256sums=('a0f025c9dd2972709f3e6359deccc6b7274127a8aad5a2e238105c77265b9073')
 
 depends=("glibc")
-makedepends=("clang" "go" "git" "bpf" "linux" "linux-headers" "libelf" "llvm" "pkgconf")
+makedepends=("go" "git" "bpf" "linux" "linux-headers" "libelf" "clang" "llvm" "pkgconf")
 
 build() {
     cd "${srcdir}/${pkgname}"
@@ -27,6 +27,6 @@ build() {
 package() {
     cd "${srcdir}/${pkgname}"
     install -Dm755 "bin/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
-    install -Dm644 "README.md" "README_CN.md" "README_JA.md" -t "${pkgdir}/usr/share/doc/${pkgname}"
+    install -Dm644 "README.md" "README-zh_Hans.md" -t "${pkgdir}/usr/share/doc/${pkgname}"
     install -Dm644 "LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 }

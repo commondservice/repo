@@ -1,0 +1,144 @@
+# Maintainer: Dee.H.Y <dongfengweixiao at hotmail dot com>
+# Contributor: Mark Wagie <mark dot wagie at proton dot me>
+# This repository is a fork of musicpod-git.
+# Before executing makepkg, you can set FVM_CACHE_PATH to $HOME/fvm or the path specified by the cachePath field in the $HOME/.config/fvm/.fvmrc file.
+
+pkgname=flclash
+pkgver=0.8.92
+pkgrel=2
+pkgdesc="A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free."
+url="https://github.com/chen08209/FlClash"
+license=('GPL-3.0-or-later')
+arch=('x86_64' 'aarch64')
+depends=(
+  'at-spi2-core'
+  'cairo'
+  'fontconfig'
+  'glib2'
+  'glibc'
+  'gtk3'
+  'libayatana-appindicator'
+  'libepoxy'
+  'libgcc'
+  'libkeybinder3'
+  'libstdc++'
+  'pango'
+)
+makedepends=(
+  'clang'
+  'cmake'
+  'fvm'
+  'git'
+  'lld'
+  'llvm'
+  'ninja'
+  'patchelf'
+  'rustup'
+  'go'
+)
+
+options=('!lto')
+
+_pkgsrc="$pkgname-$pkgver"
+_pkgext="tar.gz"
+source=(
+  "${pkgname}"::"git+https://github.com/chen08209/FlClash.git#tag=v$pkgver"
+  "0001-fix-build-error.patch"
+  "0002-fix-early-return-when-hotkey-not-found-in-map.patch"
+  "0003-use-local-hotkey_manager.patch"
+  "com.follow.clash.desktop"
+  "Clash.Meta::git+https://github.com/chen08209/Clash.Meta.git"
+  "flutter_distributor::git+https://github.com/chen08209/flutter_distributor.git"
+  "tray_manager::git+https://github.com/chen08209/tray_manager.git"
+  "hotkey_manager::git+https://github.com/leanflutter/hotkey_manager.git"
+)
+sha256sums=('aaf8c535929ecc642637334799f8396301fbc39a3ea25b2c9a8afdabf4a7e34d'
+            'b551c46a1577758c13bdd07868d41e4de817c6184114e1b10d39e04ae572a76a'
+            'b2791f04cd6d0752cc5b0746eec6b3b959def21eb21bfc3cf594deef8c8777d0'
+            '2c1b44a63729e8882e6f1e061d018f006450403d968aafd1046b0cdf79e50d90'
+            '0601176d0b5df7aafb3c949417b7f0d98ab17d21b6fcc89c6f83a7e031bbe45d'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd "$srcdir/hotkey_manager"
+  patch -p1 -i "${srcdir}/0002-fix-early-return-when-hotkey-not-found-in-map.patch"
+
+  cd "$srcdir/$pkgname"
+  git submodule init
+  git config submodule.core/Clash.Meta.url "$srcdir/Clash.Meta"
+  git config submodule.plugins/flutter_distributor.url "$srcdir/flutter_distributor"
+  git config submodule.plugins/tray_manager.url "$srcdir/tray_manager"
+  git -c protocol.file.allow=always submodule update
+  patch -p1 -i "${srcdir}/0001-fix-build-error.patch"
+  patch -p1 -i "${srcdir}/0003-use-local-hotkey_manager.patch"
+
+  # go mod download
+  cd "$srcdir/$pkgname/core"
+  export GOPATH="${srcdir}"
+  go mod download -modcacherw
+}
+
+build() {
+  # build core
+  cd "$srcdir/$pkgname/core"
+  if [ "$CARCH" == "aarch64" ]; then
+    export GOARCH=arm64
+  else
+    export GOARCH=amd64
+  fi
+  export GOOS=linux
+  export CGO_ENABLED=0
+  export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw"
+  export TAGS="with_gvisor"
+  go build -tags="$TAGS" -o "../libclash/linux/FlClashCore"
+
+  export FVM_CACHE_PATH="$SRCDEST/fvm-cache"
+  cd "${srcdir}/$pkgname"
+
+  fvm install 3.35.7
+  fvm use 3.35.7
+  fvm flutter --disable-analytics
+  fvm flutter --no-version-check pub get
+  fvm flutter build linux --release --dart-define=APP_ENV=stable
+}
+
+package() {
+  if [ $CARCH == "aarch64" ]; then
+    FLUTTER_ARCH=arm64
+  else
+    FLUTTER_ARCH=x64
+  fi
+
+  cd "${srcdir}/$pkgname/build/linux/$FLUTTER_ARCH/release/bundle"
+
+  install -Dm755 "FlClash" "$pkgdir/usr/lib/$pkgname/FlClash"
+  install -Dm755 "FlClashCore" "$pkgdir/usr/lib/$pkgname/FlClashCore"
+  cp --reflink=auto -r lib/ "$pkgdir/usr/lib/$pkgname/"
+  cp --reflink=auto -r data/ "$pkgdir/usr/lib/$pkgname/"
+  # copy libquickjs_c_bridge_plugin.so
+  cp --reflink=auto "../plugins/flutter_js/bundle/lib/libquickjs_c_bridge_plugin.so" "$pkgdir/usr/lib/$pkgname/lib/libquickjs_c_bridge_plugin.so"
+
+  # runpath
+  patchelf --set-rpath '$ORIGIN/lib' "$pkgdir/usr/lib/$pkgname/FlClash"
+  for i in "$pkgdir/usr/lib/$pkgname/lib"/*.so; do
+    [ -z "$(patchelf --print-rpath "$i")" ] && continue
+    patchelf --set-rpath '$ORIGIN' "$i"
+  done
+
+  # symlink
+  install -dm755 "${pkgdir}/usr/bin"
+  ln -sfr "$pkgdir/usr/lib/$pkgname/FlClash" "$pkgdir/usr/bin/${pkgname}"
+
+  # icon
+  install -Dm644 "$srcdir/$pkgname/assets/images/icon.png" \
+    "$pkgdir/usr/share/pixmaps/$pkgname.png"
+
+  # .desktop file
+  install -Dm644 "$srcdir/com.follow.clash.desktop" "${pkgdir}/usr/share/applications/com.follow.clash.desktop"
+
+  # license
+  install -Dm644 "${srcdir}/$pkgname/LICENSE" -t "$pkgdir/usr/share/licenses/$pkgname/"
+}

@@ -4,7 +4,7 @@
 # Contributor: Hans Janssen <hans@janserv.xs4all.nl>
 
 pkgname=flightgear
-pkgver=2024.1.1
+pkgver=2024.1.5
 pkgrel=1
 pkgdesc="An open-source, multi-platform flight simulator"
 arch=(armv7h aarch64 x86_64)
@@ -18,22 +18,18 @@ optdepends=('qt6-base: fgfs --launcher'
             'flightgear-data')
 license=("GPL")
 url="http://www.flightgear.org/"
-source=("https://gitlab.com/flightgear/flightgear/-/archive/v${pkgver}/flightgear-v${pkgver}.tar.gz"
-        fix-openal.patch)
-sha256sums=('8a5410d7894d942bd2feed60c09d601bc46a670707ded771c6daf6ee7114655a'
-            '2b1277d3e33d9e4a28d80c8089ef4477431a7346892f07581984ff5529a0237b')
+source=("https://gitlab.com/flightgear/flightgear/-/archive/${pkgver}/flightgear-${pkgver}.tar.gz")
+sha256sums=('d433fcf51bf05c96d5a6ae54a2161bf0545bbe2f69fd43470be9e479f505c52c')
 
 prepare() {
-  cd flightgear-v$pkgver
-
-  patch -Np1 --no-backup-if-mismatch < ../fix-openal.patch
+  cd flightgear-$pkgver
 
   rm -rf build
   mkdir build
 }
 
 build() {
-  cd flightgear-v$pkgver/build
+  cd flightgear-$pkgver/build
 
   # no -DSYSTEM_FLITE since flite1 is required
   CFLAGS+=" -ffile-prefix-map=${srcdir}=${DBGSRCDIR:-/usr/src/debug}"
@@ -61,7 +57,7 @@ build() {
 }
 
 package() {
-  cd flightgear-v$pkgver/build
+  cd flightgear-$pkgver/build
   make DESTDIR="$pkgdir" install
 
   install -Dm0644 ../package/flightgear.ico "$pkgdir"/usr/share/icons/flightgear.ico

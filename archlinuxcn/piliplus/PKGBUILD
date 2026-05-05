@@ -2,16 +2,16 @@
 
 pkgname=piliplus
 _srcname=PiliPlus
-pkgver=1.1.5.1
+pkgver=2.0.7
 pkgrel=1
 pkgdesc="A third-party Bilibili client developed in Flutter"
 url="https://github.com/bggRGjQaUbCoE/${_srcname}"
 license=('GPL-3.0-or-later')
 arch=('x86_64')
-depends=('gtk3' 'mpv' 'libayatana-appindicator')
+depends=('gtk3' 'mpv' 'libayatana-appindicator' 'webkit2gtk-4.1')
 makedepends=('git' 'clang' 'cmake' 'ninja' 'fvm' 'patchelf')
 source=("git+${url}.git#tag=${pkgver}")
-sha256sums=('f6141316e3bd1b0f12c8b1cf8133522aece343d971abf0545ca9414fb34e6aa5')
+sha256sums=('d5122b3f719398409cbd1cac441d086385d2a0e4a6d3cfc26604a34449e902e6')
 
 prepare() {
 	cd "${_srcname}/"
@@ -47,5 +47,5 @@ package() {
 
 	cd assets
 	install -Dm644 images/logo/logo.png "${pkgdir}/usr/share/icons/hicolor/512x512/apps/${pkgname}.png"
-	install -Dm644 "linux/${pkgname}.desktop" -t "${pkgdir}/usr/share/applications/"
+	install -Dm644 "linux/com.example.${pkgname}.desktop" -t "${pkgdir}/usr/share/applications/"
 }

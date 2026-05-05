@@ -32,7 +32,7 @@ case "$CARCH" in
 esac
 
 epoch=1
-pkgver=1.14.0.DEV.1395.ga32911ae58e
+pkgver=1.14.0.DEV.1789.g52e04af4bd9
 pkgrel=1
 pkgdesc="Julia is a high-level, high-performance, dynamic programming language."
 arch=('i686' 'x86_64' 'armv7h' 'aarch64')
@@ -58,7 +58,7 @@ case "$CARCH" in
     ;;
 esac
 makedepends=("${depends_libs[@]}" llvm-julia-git gcc-fortran git patchelf python proot
-             "${_soname_deps[@]}" julia-git-common-scripts)
+             "${_soname_deps[@]}" julia-git-common-scripts tar)
 # Both debug and strip cause pacman to edit the ELF files and breaking them
 # for loading.
 options=('!debug' '!strip' '!buildflags')
@@ -81,27 +81,23 @@ source=('git+https://github.com/JuliaLang/julia'
         arch-source-translate.cpp
         0001-Disable-upgrade-of-stdlib-package.diff
         0002-Hard-code-7z-and-zstd-path.diff
-        0001-Apply-at-propagate_inbounds-to-a-few-nzrange-related-.diff
-        0002-Add-more-at-inbounds.diff
         download_curl.diff)
 sha512sums=('SKIP'
-            '8df1e8a32bca245747bf0a36ac3cead0f913a5f67d5ede17cd217fdf764ee3b16f5e1b39cbef2a486bf6f1264a29f8128c3b0089181b4a54a179c1263d8a2a53'
-            '1168eb6d0979845330c59469ed442c87e255098e68958d5448fc134f1d733217d260259b39919d04ec0c12778a7c45628210dd3c7b3e2a9e91f4a87b86c7d5f1'
-            '110ab7a7b908b3c28131b6dce9e3b50b228199e09ed976d494c33ee82b3073ad8b59a8c374bf0c58625ac06b7e652edc5d1d12d7856d2d78ad90def635135fe8'
-            '2c969145c98cdc385969b4da4a099fc7a533783833c00c552418455152aa4aa806039b6e1363bfd02c0f5ed6d504d5d7f76117dc1439c6d4d677935fbfccba2a'
-            '6cd9731e11a32d1f08320e8dad2acb7ae6e4b6a99f3c30ed961df8adbb032d226e0104d0f473450c876f6be0e0316529b767a1b0f81365a52bbbcf077bcb8325'
-            'cf636063dff3df97bb1e587f588660ce0fc80ffd14edd37937d3a5362118d518d75e7088d38643eb87c9e5d31cd4bba96189e8e7fb193820c85f2caf494caabf'
-            '8dbb73267f75c905cb6d463ebf55480a383e12543f1e9bd6d69cf7acaf1d395daa4596fad46fef14617eceb63cee580c8d02520c3cc80c2f5ed34d0d8dc51b1c'
-            '37feea52e2f7bf41baf28fb5133324eb39c6700c93c4bb83d4c2bda7940908dcea96e1985941436551c7a13cbf1ae7ae86ff002db01fc6f153e0a26dd1394f2f'
-            '255c6e11d0b94b3b0fdb37ea57fb67c9f5023b7160ec540d7bff3165237415bb21237a650f70495cd5fbd5cebfe8c1d0310cc4d983a265161af15e09b2edcb67'
-            'b58361bf1e064aa0eb5cdc41bced0851c42f653560fd990b33896c7a02345d4352b2a35ce6131e4eb529b0e0c9783d7839c28b417718f733f2b0bd021e605360'
+            '156f0373ec6ae82c168ef98221eaf2b930599f90dff701336e1dc8e21175365994231dbb275fbfd28fcce51f77b5240af556070f28c365452716626e01d15457'
+            '5d016541065369e6da380738edeee44f39b0fafcc5efad73fcbbc81f062876be45a84013474284d33654bc6b3939f5ea46565c5a0c3fbb10bd9a149fdbfc6638'
+            'ca043deff75e4cc93645aa8e8b2b9ed9bcdbb692b25721eac2067d9ba9179fe5c7aa16177de5410f35185725804eb4b3b0ae0f64a897f614720ad5ab7c9aa79c'
+            '681c98a84099d51f6ef3b2d6569cec34c57ba1dd608524e36cdac339ec3ef88b5aa2927481bcff59b658d0b79ce1f65bb061fff774c4e6ceb40f21307077d9e0'
+            '84e0506387995d58ffdb08c11eaa623a7ec8e95a4416fe5690eafaccbd8a48098eb93835ab7625905912aa8126c4de7f64d0fea9c9641d471dbfd5387bd37c01'
+            'ccc527ee7ad768336e319c8ed2a3b24068bbe8c5eabefb213c7241f89233cf5a7f6a8740cb37a6777cec77a88b7077d5335f2c3f3de6212cb41c5da77bd59fb2'
+            'b4bfea3c2aaa9811b28e2105e9d43ac043a5ad1efce2233da4f84b0742173659f4d31388f8b06aa08d90ccb5c10096b6a79d30f2bb134db989b377445036bcb3'
+            '6e772d062165baf3a1bd6f0dea54f987173a233972f779f133c14d361f916d5822a4318e83262d1fbce6e98c03604cf13df5023eb0190ecbb3c010153f08ec40'
+            '4d44fea1332346beb6da5b96824d6ae0f8ac525750f86bd1d52b1965178bba255341889085fb3c0974f2057efaa13779bcaad5c7b0ac5ca441e40299798a1e0f'
+            'd8b434908405b7a7c6a11279df668ce86309f7fe0eb5c0c3704c39d72aa0017eec8ff3bb179d49d682e627815d44ef550d7a7916a32f7265eb94c65c197fe447'
             '997f22456f175c6cc03b2dd407b7584df514bc4c91602ef011b93d8b558f7c587b4e216535e573f6063f3a606f88c48dee3041a5122a7dbf0bee6d1bc8df15b4'
             'a668a9bd01cec8f53f457d9124107a230260c79fd57cbce4c4bf80e3451758d8e67263faa3f9d8b3da0c10bffbe29e4032106881ebe682c7f66414d8989638be'
             'c2da7461c53e56293d35581cb4aa2500ef9a98e52a354bfa9271f44bd768ed77c5b362e304e0ab467fb286d2198f3e28cf91089e8773ebcfc85e294223a12f0e'
             '99b91e921e730016e758dba10fb80436c0bb595789c941536d4533fd053caeff1100c06d1813cd0326790c85a988f1c6e282bb185eba7991b0485d529d35ba2c'
             '6184ec0c916cf51a478760dba85d3a140077ec073a49aac1b95d9fd3f46b4ecefad44725729adfc4af576e6940f65ee8205bce153db1e9fe8fb432c6316f90c5'
-            '6cc1a350ad3ddf6e996386da7aea68a1ffe74ef66ddee2f4448c74c04a7584cc92b3d401702286a44388c8421cd1ec511f9d90ffbc757d5e40014b8beedde684'
-            '693702db4d444407316a1b22d8fa98679afcfe5a64301e7edaa84545a108a192f37b5794b9d9484a6352a675bf8a3e9268f4479708eded176abd4f23af56bcf2'
             '5be40dcb72428885c06c8353019bd8fac0ea186a7536cf2bab2554d2724fb3d4a5b0b3f61727428e5cf7906f14a213f08dcb238b5bd10d408d86669e2c93ca78')
 
 _versioned_llvm=
@@ -282,11 +278,6 @@ EOF
     echo > "$f"
   done
   _patch_suitesparse
-  (
-    cd usr/share/julia/stdlib/v*/SparseArrays
-    patch -Np1 --no-backup-if-mismatch < "$srcdir/0001-Apply-at-propagate_inbounds-to-a-few-nzrange-related-.diff"
-    patch -Np1 --no-backup-if-mismatch < "$srcdir/0002-Add-more-at-inbounds.diff"
-  )
   # Try disabling threading when generating precompilations
   # The module initialization code seems to have some bug that is triggered
   # reliably on aarch64 on the build machine.

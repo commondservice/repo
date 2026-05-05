@@ -1,50 +1,54 @@
-# Maintainer: Misaka13514 <Misaka13514 at gmail dot com>
+# Maintainer: TTsdzb <ttsdzb at outlook dot com>
+# Maintainer: Jia Yin<yenfeng.shetiko at gmail dot com>
+# Contributor: Misaka13514 <Misaka13514 at gmail dot com>
 # Contributor: Hao Long <imlonghao@archlinuxcn.org>
 # Contributor: Lin Ruoshui <LinRs at users.noreply.github dot com>
 # Contributor: hexchain <i at hexchain.org>
+# Contributor: Rowisi < nomail <at> private <dot> com >
+# Contributor: So1ar <so1ar114514@gmail.com>
+# Contributor: Bot-wxt1221 <3264117476@qq.com>
 
 pkgname=hmcl-bin
-_pkgname=${pkgname%-bin}
-pkgver=3.8.2
-_tag="v${pkgver}"
+pkgver=3.13.2
 pkgrel=1
-pkgdesc="A Minecraft Launcher which is multi-functional, cross-platform and popular"
+install=hmcl-bin.install
+pkgdesc="A Minecraft Launcher which is multi-functional, cross-platform and popular."
 arch=('any')
-url="https://github.com/HMCL-dev/HMCL"
+url="https://github.com/huanghongxun/HMCL"
 license=('GPL-3.0-or-later')
 depends=('java-runtime' 'hicolor-icon-theme')
-provides=("${_pkgname}")
-conflicts=("${_pkgname}")
-source=("hmcl-launch-script"
-        "${_pkgname}.desktop"
-        "${_pkgname}-${pkgver}.jar::${url}/releases/download/${_tag}/HMCL-${pkgver}.jar")
-b2sums=('1de8eca922b01b9c4c6d9a173143f05b900fd6b12b1b27bae175948a43125619d0e14c82d704548f70539af13eb4fd9f7288749265949089c7d6a8fe9032d284'
-        '6c38da38fa13ad0af061d593f7733d6a406025c473240ccee4d07c89e71f8d5ead430374a7500f1395a7341c67e06ef3664cb1747ab93cba63459f7906b1598a'
-        'd729dabf2302d705963e02c4167872079bf72cdd657fe2aabef116a706147a0781d5dbde775f65d1a371ca338114b7effbbe2867f9113475b949ae7409267abe')
+provides=('hmcl')
+conflicts=('hmcl')
+replaces=('hmcl-stable-bin')
+source=("hmcl.desktop"
+        "hmcl-launch-script"
+        "${pkgname}-${pkgver}-${pkgrel}.jar::https://github.com/HMCL-dev/HMCL/releases/download/v${pkgver}/HMCL-${pkgver}.jar"
+        "${pkgname}-${pkgver}-${pkgrel}.png::https://raw.githubusercontent.com/HMCL-dev/HMCL/v${pkgver}/HMCL/src/main/resources/assets/img/icon.png"
+        "${pkgname}-${pkgver}-${pkgrel}@2x.png::https://raw.githubusercontent.com/HMCL-dev/HMCL/v${pkgver}/HMCL/src/main/resources/assets/img/icon@2x.png"
+        "${pkgname}-${pkgver}-${pkgrel}@4x.png::https://raw.githubusercontent.com/HMCL-dev/HMCL/v${pkgver}/HMCL/src/main/resources/assets/img/icon@4x.png"
+        "${pkgname}-${pkgver}-${pkgrel}@8x.png::https://raw.githubusercontent.com/HMCL-dev/HMCL/v${pkgver}/HMCL/src/main/resources/assets/img/icon@8x.png"
+        "hmcl-bin.install")
+sha256sums=('9a561081f8f3ece3da114afd4f6d90565ca0e04716eef4ea88c6b4306566ae9b'
+            'fe8c663bd3aaee7c70dff4da75781a078993c665e5492883d708e46658e6c0ec'
+            'd8e2ed7f8edf98d88414e9231e20c28fdf6c7a2332db93e59910d214abbd5852'
+            '44c6ac6aa2c55c35826f873dfd3dbf11cb7675f2e88040c64bdea861426aa861'
+            '592f4c5bcf636250e6d4cad6b6a45bb49fd01cb346072b1dc9b7ff703fd26fce'
+            '91a67409bb46a5105eb713956e4061621b7a4542ef0de52952287a995993c6d0'
+            'd4e56ae2e8c0d991dba01ef3124ef4d38918825f58728338a8bab5e78319306a'
+            '09f2012c22b24ea27ce27d5025e6e6e9ad8914506c5f8231f89b3c369970d274')
 
-prepare() {
-  # extract icons from jar
-  local _iconfile
-  for _iconfile in icon.png icon@2x.png icon@4x.png icon@8x.png; do
-    jar -xf "${_pkgname}-${pkgver}.jar" "assets/img/${_iconfile}"
-  done
-}
+noextract=("${pkgname}-${pkgver}-${pkgrel}.jar")
 
 package() {
-  # custom launch script
-  install -Dm755 "hmcl-launch-script" "${pkgdir}/usr/bin/$_pkgname"
-
-  # desktop file
-  install -Dm644 "hmcl.desktop" "${pkgdir}/usr/share/applications/${_pkgname}.desktop"
-
-  # install jar
-  install -Dm644 "${_pkgname}-${pkgver}.jar" "${pkgdir}/usr/share/java/${_pkgname}/${_pkgname}.jar"
+  install -Dm644 "${pkgname}-${pkgver}-${pkgrel}.jar" "${pkgdir}/usr/share/java/${pkgname}/${pkgname}.jar"
+  install -Dm755 "hmcl-launch-script" "${pkgdir}/usr/bin/${pkgname}"
+  install -Dm644 "hmcl.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
 
   # install icons
   local _icon _iconfile
-  for _icon in 32:icon.png 64:icon@2x.png 128:icon@4x.png 256:icon@8x.png; do
+  for _icon in 32:${pkgname}-${pkgver}-${pkgrel}.png 64:${pkgname}-${pkgver}-${pkgrel}@2x.png 128:${pkgname}-${pkgver}-${pkgrel}@4x.png 256:${pkgname}-${pkgver}-${pkgrel}@8x.png; do
     _iconfile=${_icon#*:}
     _icon=${_icon%:*}
-    install -Dm644 "assets/img/${_iconfile}" "${pkgdir}/usr/share/icons/hicolor/${_icon}x${_icon}/apps/${_pkgname}.png"
+    install -Dm644 "${_iconfile}" "${pkgdir}/usr/share/icons/hicolor/${_icon}x${_icon}/apps/${pkgname}.png"
   done
 }

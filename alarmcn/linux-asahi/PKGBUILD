@@ -1,7 +1,7 @@
 # AArch64 Apple Silicon (Asahi Linux)
 # Maintainer: Janne Grunau <j@jannau.net>
 
-pkgver=6.17.12.asahi1
+pkgver=6.19.14.asahi1
 pkgrel=1
 
 [[ $pkgver =~ ([.0-9]+)\.asahi([0-9]+) ]]
@@ -20,36 +20,23 @@ url="http://www.kernel.org/"
 license=('GPL2')
 
 makedepends=(
-  bc dtc kmod libelf pahole cpio perl rustup tar xz xmlto clang python
+  bc dtc kmod libelf pahole cpio perl rust rust-src rust-bindgen tar xz xmlto clang python
 )
 options=('!strip')
 source=(
   https://github.com/AsahiLinux/linux/archive/${_commit_id}.tar.gz
   config         # the main kernel config file
 )
-sha256sums=('eb2400346cc895e6ba6b063b71210d1896b10ef6bb1490a58f5803aa150dff60'
-            '9f8f7937c5514efaac4d72d1dbdb53f73dedb546ecf5174ee0c0492ac40afc81')
-b2sums=('0a399a09720497291652c85b84d0a01dc426e7dccca0595693450bb62dcd5030caf9f9535cf0bb2d7450ca11dbf53993073d3560a0a600dc78bdda67b1a63487'
-        '20c8e9ff7b572c831ff7dfb0d41dcc8b85a679aa709a2d9c315823c4817b41979f9b8036888d38c79b3d1d47936d9e87cfc698030d2e084890dc471545f6f35e')
+sha256sums=('bfeade7323c0bed9fb6d5f0927fa1d3f347eab1e3ecdb5d2508bc22b3ccce3d6'
+            'a14a693ee9f0f14e5f3d2b23c54a9970b967766bd7a6641b4ac6c47837c75d37')
+b2sums=('2059fa40f6c66d832e8532432c6746b55569090a75088c435f1bc3b594c68fa8a24c674aedc50cdd4b15e6d794f27808efc5f152597239a10204baaebe96eb7c'
+        'd0784c466ef2449cf4535bc72f3450cdd8242c53dcf6bc1d727de4ba178df0c72f31e7a7507bd75d913e28d32287987736472ede0f096c8117fa6fd9b97d6edc')
 export KBUILD_BUILD_HOST=archlinux
 export KBUILD_BUILD_USER=$pkgbase
 export KBUILD_BUILD_TIMESTAMP="$(date -Ru${SOURCE_DATE_EPOCH:+d @$SOURCE_DATE_EPOCH})"
 
-_rust_ver=1.91.1
-
-_set_cargo_path() {
-  PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/${_rust_ver}-$(uname -m)-unknown-linux-gnu/bin:$PATH"
-}
-
 prepare() {
   cd $_srcname
-
-  rustup install ${_rust_ver}
-  rustup component add rust-src
-  _path=$PATH
-  PATH="$HOME/.rustup/toolchains/${_rust_ver}-$(uname -m)-unknown-linux-gnu/bin:$_path"
-  cargo install --locked --version 0.72.0 bindgen-cli
-  PATH="$HOME/.cargo/bin:$HOME/.rustup/toolchains/${_rust_ver}-$(uname -m)-unknown-linux-gnu/bin:$_path"
 
   echo "Setting version..."
   echo "-$_asahirel-$pkgrel" > localversion.10-pkgrel
@@ -77,16 +64,12 @@ prepare() {
 }
 
 build() {
-  _set_cargo_path
-
   cd $_srcname
   echo "Building base..."
   make all O=$PWD/build/base
 }
 
 _package_kernel() {
-  _set_cargo_path
-
   pkgdesc="The $pkgdesc kernel and modules"
   depends=(coreutils kmod initramfs $2 "m1n1>=$_m1n1_version")
   optdepends=('crda: to set the correct wireless channels of your country'
@@ -166,6 +149,9 @@ _package-headers() {
 
   echo "Installing KConfig files..."
   find . -name 'Kconfig*' -exec install -Dm644 {} "$builddir/{}" \;
+
+  echo "Installing unstripped VDSO..."
+  make O="$O" INSTALL_MOD_PATH="$pkgdir/usr" vdso_install link=
 
   echo "Removing unneeded architectures..."
   local arch

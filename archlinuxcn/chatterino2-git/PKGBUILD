@@ -1,13 +1,13 @@
 # Maintainer: Ckat <ckat@teknik.io>
 pkgname=chatterino2-git
 _pkgname=chatterino2
-pkgver=2.5.4.r117.ge00b404
+pkgver=2.5.5.r68.g6ddd9af
 pkgrel=1
 pkgdesc='Second installment of the Twitch chat client series "Chatterino", dev/git version'
-arch=('any')
+arch=('x86_64' 'aarch64')
 url=https://chatterino.com
 license=('MIT')
-depends=('qt6-base' 'qt6-tools' 'boost-libs' 'openssl' 'qt6-imageformats' 'qtkeychain-qt6' 'qt6-svg' 'libnotify')
+depends=('qt6-base' 'qt6-tools' 'boost-libs' 'openssl' 'qt6-imageformats' 'qtkeychain-qt6' 'qt6-svg' 'libnotify' 'hunspell')
 makedepends=('git' 'boost' 'cmake' 'rapidjson')
 optdepends=('streamlink: For piping streams to video players'
             'pulseaudio: For audio output'
@@ -20,7 +20,6 @@ source=("git+https://github.com/Chatterino/chatterino2"
         "git+https://github.com/pajlada/settings"
         "git+https://github.com/pajlada/signals"
         "git+https://github.com/pajlada/serialize"
-        "git+https://github.com/Chatterino/websocketpp"
         "git+https://github.com/Neargye/magic_enum"
         "git+https://github.com/mackron/miniaudio"
         "git+https://github.com/lua/lua"
@@ -28,7 +27,6 @@ source=("git+https://github.com/Chatterino/chatterino2"
         "git+https://github.com/Chatterino/certify"
         "git+https://github.com/martinmoene/expected-lite")
 md5sums=('SKIP'
-         'SKIP'
          'SKIP'
          'SKIP'
          'SKIP'
@@ -61,7 +59,6 @@ prepare () {
     git config submodule.lib/settings.url "$srcdir/settings"
     git config submodule.lib/signals.url "$srcdir/signals"
     git config submodule.lib/serialize.url "$srcdir/serialize"
-    git config submodule.lib/websocketpp.url "$srcdir/websocketpp"
     git config submodule.lib/miniaudio.url "$srcdir/miniaudio"
     git config submodule.lib/magicenum.url "$srcdir/magicenum"
     git config submodule.lib/sol2.url "$srcdir/sol2"
@@ -85,6 +82,7 @@ build() {
         -DUSE_PRECOMPILED_HEADERS=OFF \
         -DCHATTERINO_UPDATER=OFF \
         -DSKIP_JSON_GENERATION=ON \
+        -DCHATTERINO_SPELLCHECK=ON \
         "${flags[@]}" \
         ..
     cmake --build .
@@ -103,4 +101,5 @@ package() {
     fi
     install -Dm644 "resources/com.chatterino.chatterino.desktop" "$pkgdir/usr/share/applications/com.chatterino.chatterino.desktop"
     install -Dm644 "resources/icon.png" "$pkgdir/usr/share/pixmaps/com.chatterino.chatterino.png"
+    install -Dm644 "LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
 }

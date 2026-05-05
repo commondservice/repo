@@ -1,7 +1,7 @@
 # Maintainer: mzz2017 <mzz@tuta.io>
 
 pkgname=v2raya-git
-pkgver=20251215.r1675.766c65e2
+pkgver=20260504.r1770.074305b2
 pkgrel=1
 install=.INSTALL
 pkgdesc="v2rayA nightly version"
@@ -9,7 +9,7 @@ arch=('i686' 'x86_64' 'armv7h' 'armv6h' 'aarch64')
 url="https://github.com/v2rayA/v2rayA"
 license=('GPL3')
 depends=('glibc')
-makedepends=('git' 'go>=2:1.17.0-1' 'nodejs>=17' 'yarn' 'fnm')
+makedepends=('git' 'go>=2:1.17.0-1' 'nodejs-lts-jod' 'yarn')
 provides=('v2raya')
 conflicts=('v2raya')
 backup=("etc/default/v2raya")
@@ -27,12 +27,6 @@ pkgver() {
 build() {
 	cd "${pkgname}/gui/"
 
-	fnm install 20.9.0
-	eval "$(fnm env --use-on-cd --shell=bash)"
-	fnm use 20.9.0
-
-	# https://github.com/webpack/webpack/issues/14532#issuecomment-947012063
-	export NODE_OPTIONS=--openssl-legacy-provider
 	yarn --check-files
 	export OUTPUT_DIR="${srcdir}/${pkgname}/service/server/router/web/"
 	yarn build
@@ -54,7 +48,7 @@ EOF
 }
 
 package() {
-	depends+=('v2ray>=5.0.0')
+	depends+=('v2raya-core')
 
 	cd "${pkgname}/"
 	install -Dm755 service/v2raya -t "${pkgdir}/usr/bin/"

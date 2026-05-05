@@ -5,6 +5,8 @@ pre_build_script: update_pkgver_and_pkgrel(_G.newver.lstrip('asahi-').replace('-
 
 post_build: git_pkgbuild_commit
 
+# Try to use the more up-to-date compiler we built ourselves
+build_prefix: archlinuxcn-aarch64
 time_limit_hours: 2
 
 allowed_workers:
@@ -16,4 +18,4 @@ update_on:
     use_max_tag: true
     include_regex: 'asahi-\d+\.\d[0-9.]+-\d+'
   - source: manual
-    manual: 1
+    manual: 2

@@ -2,14 +2,14 @@
 
 pkgname=fsearch-git
 _pkgname=fsearch
-pkgver=0.2.r225.gab71610
+pkgver=0.3.beta1.r92.g43d6a1b
 pkgrel=1
 pkgdesc="A fast graphical file search utility. Development version."
 arch=('i686' 'x86_64')
 url="https://cboxdoerfer.github.io/${_pkgname}"
 license=('GPL-2.0-or-later')
 depends=('gtk3' 'icu' 'pcre2')
-makedepends=('git' 'meson' 'itstool')
+makedepends=('git' 'glib2-devel' 'itstool' 'meson')
 provides=("${_pkgname}")
 conflicts=("${_pkgname}")
 source=("git+https://github.com/cboxdoerfer/${_pkgname}.git")

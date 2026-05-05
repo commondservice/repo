@@ -1,0 +1,7 @@
+maintainers:
+  - github: jaxvanyang
+update_on:
+  - source: aur
+  - source: pypi
+    pypi: multi_key_dict
+  - alias: python

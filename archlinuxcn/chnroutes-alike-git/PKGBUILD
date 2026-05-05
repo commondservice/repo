@@ -2,7 +2,7 @@
 
 _pkgname=chnroutes-alike
 pkgname=$_pkgname-git
-pkgver=0.154.42e4f4b
+pkgver=0.157.4fa02ec
 pkgrel=1
 pkgdesc="Collection of IP ranges not in China but works good enough"
 arch=('any')

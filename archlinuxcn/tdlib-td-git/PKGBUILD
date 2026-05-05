@@ -3,7 +3,7 @@
 
 pkgname=tdlib-td-git
 _pkgname=${pkgname%-git}
-pkgver=1.8.0.r9149.gcecbf12
+pkgver=1.8.0.r9707.g8fc2344
 pkgrel=1
 pkgdesc="Cross-platform library for building Telegram clients"
 arch=('x86_64' 'aarch64' 'riscv64')
@@ -12,7 +12,7 @@ license=('BSL-1.0')
 conflicts=("${_pkgname}")
 provides=("${_pkgname}")
 depends=('gcc-libs' 'zlib' 'openssl')
-makedepends=('git' 'gperf' 'gcc14' 'cmake')
+makedepends=('git' 'gperf' 'cmake')
 source=("${_pkgname}::git+https://github.com/tdlib/td.git")
 sha256sums=('SKIP')
 
@@ -25,9 +25,7 @@ build() {
 	cmake -S "${_pkgname}" \
 		-B build \
 		-DCMAKE_BUILD_TYPE=None \
-		-DCMAKE_INSTALL_PREFIX=/usr \
-		-DCMAKE_C_COMPILER=gcc-14 \
-		-DCMAKE_CXX_COMPILER=g++-14
+		-DCMAKE_INSTALL_PREFIX=/usr
 
 	cmake --build build
 }

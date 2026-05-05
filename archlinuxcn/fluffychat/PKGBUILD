@@ -7,7 +7,7 @@ export FVM_CACHE_PATH RUSTUP_TOOLCHAIN
 
 _pkgname="fluffychat"
 pkgname="$_pkgname"
-pkgver=2.2.0
+pkgver=2.5.1
 pkgrel=1
 pkgdesc="The cutest instant messenger in the [matrix]"
 url="https://github.com/krille-chan/fluffychat"
@@ -16,9 +16,10 @@ arch=('x86_64' 'aarch64')
 
 depends=(
   'gtk3'
-  'libsecret'     # flutter_secure_storage
+  'libsecret' # flutter_secure_storage
+  'openssl'   # sqlite encryption
+  'webkit2gtk-4.1'
   'xdg-user-dirs' # path_provider
-  'openssl'       # sqlite encryption
 )
 makedepends=(
   'clang'
@@ -45,7 +46,7 @@ source=(
   '0000-fix-wayland-gtk-csd.patch'
 )
 sha256sums=(
-  '7efc395a198d006dbf768163e0812e22d8cbf708ed8eb57448c20e308e9b7056'
+  '498c4390bec4c4244f58f9ecb39002f607d23abea900ced921f7a33eee56fa9d'
   '04a373c2c25a9be1617ab1ccb19da48ae379ff392bb59a3938bcdec00ab82230'
 )
 
@@ -62,12 +63,17 @@ prepare() (
 )
 
 build() {
+  local _units=$(OMP_NUM_THREADS=16 nproc --all)
+  export CARGO_PROFILE_RELEASE_LTO=false
+  export CARGO_PROFILE_RELEASE_CODEGEN_UNITS=$_units
+
+  export CFLAGS CXXFLAGS
+  CFLAGS+=" -Wno-error=deprecated-literal-operator"
+  CXXFLAGS+=" -Wno-error=deprecated-literal-operator"
+
   # fix incompatible flags on ARM
   if [ "${CARCH::1}" != "x" ]; then
-    export CFLAGS CXXFLAGS
-    local i _unwanted
-
-    _unwanted=(
+    local _unwanted=(
       -fstack-protector-strong
       -fstack-clash-protection
     )
@@ -80,7 +86,7 @@ build() {
 
   cd "$_pkgsrc"
 
-  : ${_fvm_version=$(grep -Pom1 '(?<=FLUTTER_VERSION=)[0-9\.]+' ".github/workflows/versions.env")}
+  : ${_fvm_version=$(grep -Pom1 'flutter: \K[0-9\.]+' ".tool_versions.yaml")}
 
   fvm install "$_fvm_version"
   fvm use "$_fvm_version" --force

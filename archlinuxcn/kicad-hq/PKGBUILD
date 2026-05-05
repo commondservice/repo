@@ -2,14 +2,15 @@
 
 pkgname=kicad-hq
 _name=${pkgname%-hq}
-pkgver=9.0.6
-pkgrel=4
+pkgver=10.0.1
+pkgrel=1
 pkgdesc="Electronic schematic and printed circuit board (PCB) design tools"
 arch=('x86_64')
 url="https://gitlab.com/${pkgname}/${_name}"
 license=('GPL-3.0-or-later')
 depends=(
 	abseil-cpp
+	boost-libs
 	cairo
 	curl
 	freetype2
@@ -22,11 +23,13 @@ depends=(
 	libglvnd
 	libgit2
 	libsecret
+	libspnav
 	harfbuzz
 	hicolor-icon-theme
 	nng
 	opencascade
 	openssl
+	poppler-glib
 	protobuf
 	python
 	python-wxpython
@@ -56,7 +59,7 @@ optdepends=(
 	'kicad-library-3d: KiCad 3D model libraries'
 )
 source=("${url}/-/archive/${pkgver}/${_name}-${pkgver}.tar.gz")
-sha256sums=('9c10fbcd4190010a340fc06fa3b6f0faf8e62a5c3fd3e98b46e200b6ec7638d3')
+sha256sums=('d5b3e3ab4833f013bef6fdb7a13a8a1b28ec84f5865837c84e366aaa35a48f19')
 
 build() {
 	cmake -B build \
@@ -69,6 +72,7 @@ build() {
 	      -D KICAD_BUILD_I18N=ON \
 	      -D KICAD_I18N_UNIX_STRICT_PATH=ON \
 	      -D KICAD_BUILD_QA_TESTS=OFF \
+	      -D KICAD_UPDATE_CHECK=OFF \
 	      -W no-dev
 
 	cmake --build build

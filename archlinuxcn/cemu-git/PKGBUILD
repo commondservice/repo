@@ -1,14 +1,15 @@
 # Maintainer: Alexandre Bouvier <contact@amb.tf>
 _pkgname=cemu
 pkgname=$_pkgname-git
-pkgver=2.6.r113.g5cfebb4
-pkgrel=2
+pkgver=2.6.r180.g7e5516f
+pkgrel=1
 pkgdesc="Nintendo Wii U emulator"
 arch=('x86_64')
 url="https://cemu.info/"
 license=('MPL-2.0')
 depends=(
 	'gcc-libs'
+    'boost-libs'
 	'glibc'
 	'glslang>=14'
 	'hicolor-icon-theme'
@@ -86,7 +87,6 @@ build() {
 package() {
 	depends+=(
 		'libbluetooth.so'
-		'libboost_program_options.so'
 		'libcrypto.so'
 		'libcubeb.so'
 		'libcurl.so'
